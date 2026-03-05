@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar, { BottomNav } from './components/Sidebar';
 import Topbar from './components/Topbar';
 import LandingPage from './pages/LandingPage';
@@ -15,10 +15,31 @@ const pageTitles = {
   home: '', downloader: 'Download', history: 'History', settings: 'Settings',
 };
 
+// Extract shared URL from Web Share Target API query params
+// Android share sheet calls: /?url=https://x.com/...&title=...&text=...
+function getSharedUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const candidate = params.get('url') || params.get('text') || '';
+  // Extract URL from text (in case the full text contains a URL)
+  const urlMatch = candidate.match(/https?:\/\/[^\s]+/);
+  return urlMatch ? urlMatch[0] : candidate;
+}
+
 export default function App() {
-  const [activePage, setActivePage]   = useState('home');
-  const [sharedUrl, setSharedUrl]     = useState('');
-  const [drawerOpen, setDrawerOpen]   = useState(false);
+  const [activePage, setActivePage] = useState('home');
+  const [sharedUrl, setSharedUrl]   = useState('');
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Handle incoming share from Android share sheet
+  useEffect(() => {
+    const incoming = getSharedUrl();
+    if (incoming) {
+      setSharedUrl(incoming);
+      setActivePage('downloader');
+      // Clean the URL bar without a reload
+      window.history.replaceState({}, '', '/');
+    }
+  }, []);
 
   const PageComponent = pages[activePage] || LandingPage;
 
@@ -30,18 +51,13 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#f8fafb' }}>
-      {/* Hamburger drawer */}
       <Sidebar
         activePage={activePage}
         onNavigate={handleNavigate}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
       />
-
-      {/* Topbar */}
       <Topbar title={pageTitles[activePage]} onMenuOpen={() => setDrawerOpen(true)} />
-
-      {/* Page content */}
       <main className="flex-1 flex flex-col page-scroll">
         <PageComponent
           onNavigate={handleNavigate}
@@ -49,8 +65,6 @@ export default function App() {
           setSharedUrl={setSharedUrl}
         />
       </main>
-
-      {/* Bottom navigation */}
       <BottomNav activePage={activePage} onNavigate={handleNavigate} />
     </div>
   );
