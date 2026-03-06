@@ -5,7 +5,7 @@
 //
 // Worker handles both. Update WORKER_URL after deploying worker.js to Cloudflare.
 
-const WORKER_URL = 'https://mydownloader-proxy.brian-fc6.workers.dev';
+const WORKER_URL = 'https://mydownloader-proxy.YOUR-SUBDOMAIN.workers.dev';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 export function isXUrl(url = '') {
