@@ -9,7 +9,11 @@ import os from 'os';
 const execAsync = promisify(exec);
 const execFileAsync = promisify(execFile);
 const app = express();
-app.use(cors({ origin: [/^http:\/\/localhost:\d+$/, /^http:\/\/127\.0\.0\.1:\d+$/] }));
+app.use(cors({ origin: [
+  /^http:\/\/localhost:\d+$/,
+  /^http:\/\/127\.0\.0\.1:\d+$/,
+  'https://mydownloader-f6a9e.web.app',
+] }));
 app.use(express.json());
 
 const PORT = 3001;

@@ -165,7 +165,7 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
     <div className="flex flex-col">
       <div className="px-5 pt-5 pb-2">
         <h1 className="text-xl font-black mb-0.5" style={{ color: '#0f1923', letterSpacing: '-0.02em' }}>
-          X Video Downloader
+          Video Downloader
         </h1>
         <p className="text-xs" style={{ color: '#94a3b8' }}>Paste an X, TikTok or YouTube link · pick quality · download</p>
       </div>
@@ -300,7 +300,7 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
           <p className="text-xs text-center mt-2" style={{ color: '#94a3b8' }}>
             {videoInfo
               ? `${videoInfo.provider === 'tiktok' ? '♪' : videoInfo.provider === 'youtube' ? '▶' : '𝕏'} · ${videoInfo.variants[selectedQ]?.quality}${videoInfo.variants[selectedQ]?.bitrate ? ` · ${(videoInfo.variants[selectedQ].bitrate / 1000000).toFixed(1)} Mbps` : ''}`
-              : '𝕏 · Direct from X CDN · no backend'}
+              : 'X · TikTok · YouTube Shorts'}
           </p>
         </div>
 
@@ -308,15 +308,15 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
         {!url && (
           <div className="card p-5 text-center">
             <Share2 size={22} className="mx-auto mb-2" style={{ color: '#c8d8ce' }} />
-            <p className="font-semibold text-sm mb-1" style={{ color: '#9ca3af' }}>Share directly from X</p>
+            <p className="font-semibold text-sm mb-1" style={{ color: '#9ca3af' }}>Share directly from the app</p>
             <p className="text-xs leading-relaxed" style={{ color: '#d1d5db' }}>
-              On Android: tap Share on any X post → choose myDownloader from the share sheet
+              On Android: tap Share on any X or TikTok post → choose myDownloader from the share sheet
             </p>
           </div>
         )}
 
         <p className="text-xs text-center pb-2" style={{ color: '#b0bec5' }}>
-          ⚡ Direct from X's CDN · no servers · no cost · no tracking
+          ⚡ Nothing stored · no sign-in · no cost · no tracking
         </p>
       </div>
 
