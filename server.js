@@ -51,6 +51,20 @@ async function hasFfmpeg() {
   try { await execFileAsync('ffmpeg', ['-version']); return true; } catch { return false; }
 }
 
+async function hasJsRuntime() {
+  for (const bin of ['deno', 'node']) {
+    try { await execFileAsync(bin, ['--version']); return bin; } catch { /* try next */ }
+  }
+  return null;
+}
+
+function ytdlpAgeDays(version) {
+  const m = /^(\d{4})\.(\d{2})\.(\d{2})/.exec(version.trim());
+  if (!m) return null;
+  const released = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  return Math.floor((Date.now() - released.getTime()) / 86400000);
+}
+
 app.get('/api/health', async (req, res) => {
   const ytdlpPath = await getYtDlpPath();
   if (!ytdlpPath) {
@@ -62,14 +76,35 @@ app.get('/api/health', async (req, res) => {
   }
   try {
     const { stdout } = await execFileAsync(ytdlpPath, ['--version']);
+    const version = stdout.trim();
     const ffmpeg = await hasFfmpeg();
+    const jsRuntime = await hasJsRuntime();
+    const ageDays = ytdlpAgeDays(version);
+    const stale = ageDays !== null && ageDays > 90;
+
+    const problems = [];
+    if (!ffmpeg) problems.push('ffmpeg not found - only 360p will have sound.');
+    if (!jsRuntime) {
+      problems.push(
+        'No JS runtime (deno) found - YouTube downloads will likely fail with a ' +
+        '403. Install: curl -fsSL https://deno.land/install.sh | sh'
+      );
+    }
+    if (stale) {
+      problems.push(
+        `yt-dlp is ${ageDays} days old - YouTube changes often enough that this ` +
+        'alone can break downloads. Update: pip install -U yt-dlp --break-system-packages'
+      );
+    }
+
     res.json({
-      ok: ffmpeg,
+      ok: ffmpeg && !stale && !!jsRuntime,
       ytdlp: true,
       ffmpeg,
-      version: stdout.trim(),
-      message: ffmpeg ? undefined
-        : 'ffmpeg not found. Without it only 360p is downloadable with sound. Install ffmpeg.',
+      jsRuntime,
+      version,
+      ytdlpAgeDays: ageDays,
+      message: problems.length ? problems.join(' ') : undefined,
     });
   } catch {
     res.json({ ok: false, ytdlp: false, message: 'yt-dlp found but failed to run.' });

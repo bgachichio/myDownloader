@@ -200,6 +200,18 @@ export async function fetchYouTubeVideo(rawUrl) {
   if (health.ffmpeg === false) {
     throw new Error('ffmpeg is not installed. Without it YouTube downloads cannot carry sound above 360p.');
   }
+  if (health.jsRuntime === null) {
+    throw new Error(
+      'YouTube needs a JS runtime the local helper doesn\'t have (deno). ' +
+      'Install it: curl -fsSL https://deno.land/install.sh | sh - then restart the helper.'
+    );
+  }
+  if (health.ytdlpAgeDays > 90) {
+    throw new Error(
+      `The local helper's yt-dlp is ${health.ytdlpAgeDays} days old, which is old enough ` +
+      'that YouTube downloads will likely fail. Update: pip install -U yt-dlp --break-system-packages'
+    );
+  }
 
   let res;
   try {
@@ -262,7 +274,14 @@ export async function downloadFile(proxyUrl, filename, onProgress) {
   } catch {
     throw new Error('Download failed — check your connection and try again.');
   }
-  if (!res.ok) throw new Error(`Download failed (${res.status}). Try again.`);
+  if (!res.ok) {
+    let detail = '';
+    try {
+      const body = await res.json();
+      detail = body?.error || '';
+    } catch { /* not JSON */ }
+    throw new Error(detail || `Download failed (${res.status}). Try again.`);
+  }
 
   const total  = parseInt(res.headers.get('Content-Length') || '0', 10);
   const reader = res.body.getReader();
