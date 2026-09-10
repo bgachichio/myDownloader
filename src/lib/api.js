@@ -10,7 +10,7 @@
 
 const WORKER_URL =
   import.meta.env?.VITE_WORKER_URL?.replace(/\/+$/, '') ||
-  'https://mydownloader-proxy.brian-fc6.workers.dev';
+  'https://mydownloader-proxy.bgkaranja.workers.dev';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 export function isXUrl(url = '') {
