@@ -21,29 +21,8 @@ export function isTikTokUrl(url = '') {
   return /(?:^|\/\/)(?:www\.|vm\.|vt\.|m\.)?tiktok\.com\//i.test(url.trim());
 }
 
-export function isYouTubeUrl(url = '') {
-  return /(?:youtube\.com\/(?:shorts\/|watch\?v=|live\/)|youtu\.be\/)[\w-]{6,}/i.test(url.trim());
-}
-
 export function isSupportedUrl(url = '') {
-  return isXUrl(url) || isTikTokUrl(url) || isYouTubeUrl(url);
-}
-
-// YouTube refuses datacentre traffic with a bot wall, and its high-quality
-// streams arrive as separate video and audio tracks that must be muxed. A
-// Cloudflare Worker can do neither. YouTube therefore runs through the local
-// yt-dlp helper, on your own machine and your own IP.
-const LOCAL_API =
-  import.meta.env?.VITE_LOCAL_API?.replace(/\/+$/, '') || 'http://localhost:3001';
-
-export async function isLocalHelperRunning() {
-  try {
-    const res = await fetch(`${LOCAL_API}/api/health`, { signal: AbortSignal.timeout(1500) });
-    if (!res.ok) return { running: false };
-    return { running: true, ...(await res.json()) };
-  } catch {
-    return { running: false };
-  }
+  return isXUrl(url) || isTikTokUrl(url);
 }
 
 export function extractTweetId(url = '') {
@@ -186,74 +165,12 @@ export async function fetchTikTokVideo(rawUrl) {
   };
 }
 
-// ── YouTube: resolve via the local helper ────────────────────────────────────
-export async function fetchYouTubeVideo(rawUrl) {
-  const url = rawUrl.trim();
-  const health = await isLocalHelperRunning();
-
-  if (!health.running) {
-    throw new Error(
-      'YouTube needs the local helper. Run "npm run server" on your computer, ' +
-      'then try again. X and TikTok work without it.'
-    );
-  }
-  if (health.ffmpeg === false) {
-    throw new Error('ffmpeg is not installed. Without it YouTube downloads cannot carry sound above 360p.');
-  }
-  if (health.jsRuntime === null) {
-    throw new Error(
-      'YouTube needs a JS runtime the local helper doesn\'t have (deno). ' +
-      'Install it: curl -fsSL https://deno.land/install.sh | sh - then restart the helper.'
-    );
-  }
-  if (health.ytdlpAgeDays > 90) {
-    throw new Error(
-      `The local helper's yt-dlp is ${health.ytdlpAgeDays} days old, which is old enough ` +
-      'that YouTube downloads will likely fail. Update: pip install -U yt-dlp --break-system-packages'
-    );
-  }
-
-  let res;
-  try {
-    res = await fetch(`${LOCAL_API}/api/info`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url }),
-    });
-  } catch {
-    throw new Error('Could not reach the local helper. Is it still running?');
-  }
-
-  const data = await res.json();
-  if (!res.ok || data.error) throw new Error(data?.error || 'Could not read that YouTube link.');
-
-  const qualities = data.qualities?.length ? data.qualities : [{ height: 720, quality: '720p' }];
-
-  return {
-    provider: 'youtube',
-    isGif: false,
-    variants: qualities.map(q => ({
-      quality: q.quality,
-      bitrate: 0,
-      ext: 'mp4',
-      downloadUrl:
-        `${LOCAL_API}/api/download?url=${encodeURIComponent(url)}&quality=${q.height}`,
-    })),
-    tweetText:    data.title || '',
-    authorName:   data.uploader || '',
-    authorHandle: (data.uploader || 'youtube').replace(/\s+/g, ''),
-    thumbnailUrl: data.thumbnail || null,
-    mediaId:      'yt',
-  };
-}
-
 // ── Dispatcher: one entry point for every provider ───────────────────────────
 export async function fetchMedia(rawUrl) {
   const url = rawUrl.trim();
-  if (isTikTokUrl(url))  return fetchTikTokVideo(url);
-  if (isYouTubeUrl(url)) return fetchYouTubeVideo(url);
-  if (isXUrl(url))       return fetchXVideo(url);
-  throw new Error('Paste a link from X, TikTok or YouTube.');
+  if (isTikTokUrl(url)) return fetchTikTokVideo(url);
+  if (isXUrl(url))      return fetchXVideo(url);
+  throw new Error('Paste a link from X or TikTok.');
 }
 
 // ── Step 2: Download through the Worker ──────────────────────────────────────
