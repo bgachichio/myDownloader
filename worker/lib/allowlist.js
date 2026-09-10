@@ -23,8 +23,14 @@ const SUFFIX = [
 // (us, eu). Anchored at both ends so it matches that node family and nothing
 // else - not the tiktok.com apex, not a lookalike parent, not a prefixed
 // impostor such as evil-v16-webapp-prime.us.tiktok.com.
+// TikTok's region segment depends on the requester's own network location, not
+// just the node number: from a US datacentre it's v16-webapp-prime.us.tiktok.com;
+// from Cloudflare's edge (confirmed 2026-09-10 via wrangler tail on a live 502)
+// the same node comes back as v16-webapp-prime.tiktok.com, no region at all.
+// The region, when present, is optional here - not removed - so a lookalike
+// still can't smuggle itself into that slot.
 const PATTERNS = [
-  /^v\d{1,3}-webapp-prime\.[a-z]{2,3}\.tiktok\.com$/,
+  /^v\d{1,3}-webapp-prime(?:\.[a-z]{2,3})?\.tiktok\.com$/,
 ];
 
 export const MAX_URL_LENGTH = 2048;
