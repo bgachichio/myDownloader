@@ -22,6 +22,7 @@ const json = (body, status = 200) =>
 // Upstream failures are the user's problem to understand, not to debug. Map
 // them to plain sentences; never leak an upstream body.
 function toMessage(err) {
+  console.error('[tiktok]', err?.stack || err?.message || err);
   const m = String(err?.message ?? '');
   if (m.includes('private, deleted')) return { msg: m, status: 404 };
   if (m.includes('page shape')) return { msg: 'TikTok changed something. This needs a fix.', status: 502 };
