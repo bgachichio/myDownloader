@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "server": "node server.js",
-    "test:worker": "node --test worker/test/",
+    "test:worker": "node --test worker/test/**/*.test.js",
     "verify:egress": "./scripts/verify-egress.sh"
   },
   "dependencies": {
