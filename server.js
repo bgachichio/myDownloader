@@ -13,6 +13,7 @@ app.use(cors({ origin: [
   /^http:\/\/localhost:\d+$/,
   /^http:\/\/127\.0\.0\.1:\d+$/,
   'https://mydownloader-f6a9e.web.app',
+  'https://mydownloader.gachichio.org',
 ] }));
 app.use(express.json());
 
