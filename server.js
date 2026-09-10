@@ -7,11 +7,24 @@ import fs from 'fs';
 import os from 'os';
 
 const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 const app = express();
-app.use(cors());
+app.use(cors({ origin: [/^http:\/\/localhost:\d+$/, /^http:\/\/127\.0\.0\.1:\d+$/] }));
 app.use(express.json());
 
 const PORT = 3001;
+
+// yt-dlp accepts arguments that look like URLs. Anything that is not plainly
+// http(s) is rejected here rather than argued with downstream.
+function isHttpUrl(value) {
+  if (typeof value !== 'string' || value.length > 2048) return false;
+  try {
+    const u = new URL(value);
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
 
 // ─── Check yt-dlp is installed ───────────────────────────────────────────────
 async function getYtDlpPath() {
@@ -34,6 +47,10 @@ async function getYtDlpPath() {
 }
 
 // ─── Health / yt-dlp check ────────────────────────────────────────────────────
+async function hasFfmpeg() {
+  try { await execFileAsync('ffmpeg', ['-version']); return true; } catch { return false; }
+}
+
 app.get('/api/health', async (req, res) => {
   const ytdlpPath = await getYtDlpPath();
   if (!ytdlpPath) {
@@ -44,8 +61,16 @@ app.get('/api/health', async (req, res) => {
     });
   }
   try {
-    const { stdout } = await execAsync(`"${ytdlpPath}" --version`);
-    res.json({ ok: true, ytdlp: true, version: stdout.trim() });
+    const { stdout } = await execFileAsync(ytdlpPath, ['--version']);
+    const ffmpeg = await hasFfmpeg();
+    res.json({
+      ok: ffmpeg,
+      ytdlp: true,
+      ffmpeg,
+      version: stdout.trim(),
+      message: ffmpeg ? undefined
+        : 'ffmpeg not found. Without it only 360p is downloadable with sound. Install ffmpeg.',
+    });
   } catch {
     res.json({ ok: false, ytdlp: false, message: 'yt-dlp found but failed to run.' });
   }
@@ -54,7 +79,7 @@ app.get('/api/health', async (req, res) => {
 // ─── Get video info / available formats ──────────────────────────────────────
 app.post('/api/info', async (req, res) => {
   const { url } = req.body;
-  if (!url) return res.status(400).json({ error: 'URL required' });
+  if (!isHttpUrl(url)) return res.status(400).json({ error: 'A valid http(s) URL is required' });
 
   const ytdlpPath = await getYtDlpPath();
   if (!ytdlpPath) {
@@ -65,11 +90,21 @@ app.post('/api/info', async (req, res) => {
   }
 
   try {
-    const { stdout } = await execAsync(
-      `"${ytdlpPath}" --dump-json --no-playlist "${url}"`,
-      { timeout: 30000 }
+    const { stdout } = await execFileAsync(
+      ytdlpPath,
+      ['--dump-json', '--no-playlist', '--', url],
+      { timeout: 30000, maxBuffer: 32 * 1024 * 1024 }
     );
     const info = JSON.parse(stdout);
+
+    // Every option below is muxed to video+audio by yt-dlp before it reaches
+    // the browser. Audio-only is deliberately not offered.
+    const heights = [...new Set(
+      (info.formats || [])
+        .filter(f => f.vcodec && f.vcodec !== 'none' && f.height)
+        .map(f => f.height)
+    )].sort((a, b) => b - a).slice(0, 6);
+
     res.json({
       title: info.title,
       thumbnail: info.thumbnail,
@@ -77,6 +112,10 @@ app.post('/api/info', async (req, res) => {
       uploader: info.uploader || info.channel,
       platform: info.extractor_key,
       webpage_url: info.webpage_url,
+      qualities: heights.map(h => ({
+        height: h,
+        quality: h >= 2160 ? '4K' : h >= 1440 ? '1440p' : h >= 1080 ? '1080p HD' : `${h}p`,
+      })),
     });
   } catch (err) {
     const msg = err.stderr || err.message || 'Failed to fetch video info';
@@ -86,8 +125,8 @@ app.post('/api/info', async (req, res) => {
 
 // ─── Download ────────────────────────────────────────────────────────────────
 app.get('/api/download', async (req, res) => {
-  const { url, mode, quality } = req.query;
-  if (!url) return res.status(400).json({ error: 'URL required' });
+  const { url, quality } = req.query;
+  if (!isHttpUrl(url)) return res.status(400).json({ error: 'A valid http(s) URL is required' });
 
   const ytdlpPath = await getYtDlpPath();
   if (!ytdlpPath) {
@@ -95,34 +134,22 @@ app.get('/api/download', async (req, res) => {
   }
 
   // Build format string
-  let formatArgs = '';
-  let ext = 'mp4';
-
-  if (mode === 'audio') {
-    ext = quality === 'flac' ? 'flac' : 'mp3';
-    const audioBitrate = quality === 'flac' ? '0' : (quality || '192');
-    formatArgs = `-x --audio-format ${ext} --audio-quality ${audioBitrate === '0' ? '0' : audioBitrate + 'K'}`;
-  } else {
-    // video
-    const resMap = {
-      best: 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-      '1080': 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best[height<=1080]',
-      '720': 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best[height<=720]',
-      '480': 'bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/best[height<=480][ext=mp4]/best[height<=480]',
-      '360': 'bestvideo[height<=360][ext=mp4]+bestaudio[ext=m4a]/best[height<=360][ext=mp4]/best[height<=360]',
-    };
-    const fmt = resMap[quality] || resMap['best'];
-    formatArgs = `-f "${fmt}" --merge-output-format mp4`;
-  }
+  // Audio-only is not offered. Every format string below pairs a video track
+  // with an audio track and yt-dlp muxes them into one MP4 before streaming.
+  const cap = /^\d{3,4}$/.test(String(quality)) ? String(quality) : null;
+  const fmt = cap
+    ? `bestvideo[height<=${cap}][ext=mp4]+bestaudio[ext=m4a]/best[height<=${cap}][ext=mp4]/best[height<=${cap}]`
+    : 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best';
+  const formatArgs = ['-f', fmt, '--merge-output-format', 'mp4'];
 
   // Write to temp file, stream to client
   const tmpDir = os.tmpdir();
   const tmpFile = path.join(tmpDir, `myd_${Date.now()}.%(ext)s`);
 
-  const cmd = `"${ytdlpPath}" ${formatArgs} -o "${tmpFile}" --no-playlist "${url}"`;
+  const args = [...formatArgs, '-o', tmpFile, '--no-playlist', '--', url];
 
   try {
-    const { stdout, stderr } = await execAsync(cmd, { timeout: 120000 });
+    await execFileAsync(ytdlpPath, args, { timeout: 120000, maxBuffer: 32 * 1024 * 1024 });
 
     // Find the actual output file
     const files = fs.readdirSync(tmpDir).filter(f => f.startsWith('myd_'));
@@ -137,7 +164,7 @@ app.get('/api/download', async (req, res) => {
     const filename = `myDownloader_${Date.now()}.${actualExt}`;
 
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.setHeader('Content-Type', mode === 'audio' ? `audio/${actualExt}` : 'video/mp4');
+    res.setHeader('Content-Type', 'video/mp4');
 
     const stream = fs.createReadStream(filePath);
     stream.pipe(res);

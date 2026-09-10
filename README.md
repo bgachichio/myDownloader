@@ -1,17 +1,18 @@
 # myDownloader
 
-> A zero-cost, zero-backend PWA for downloading X (Twitter) videos — directly to your device.
+> A zero-cost PWA for downloading video and audio from X and TikTok — directly to your device, watermark-free.
 
 **Live at:** [mydownloader-f6a9e.web.app](https://mydownloader-f6a9e.web.app)
 
-myDownloader is a Progressive Web App that lets you download videos from X (Twitter) posts in any available quality. Paste a link, pick your resolution, and the video saves straight to your device. There is no server to maintain, no subscription, no sign-in, and no ads — just a fast, private tool that works on Android, iOS, and desktop.
+myDownloader is a Progressive Web App that lets you download videos from X (Twitter) and TikTok posts in any available quality. TikTok downloads arrive without the watermark, and the audio can be taken on its own as an MP3. Paste a link, pick your resolution, and the video saves straight to your device. There is no server to maintain, no subscription, no sign-in, and no ads — just a fast, private tool that works on Android, iOS, and desktop.
 
 ---
 
 ## Features
 
 ### Downloading
-- **Multi-quality selection** — Every resolution X provides is shown (240p up to 1080p HD), sorted best-first. You pick.
+- **Multi-quality selection** — Every resolution the platform provides is shown, sorted best-first. You pick.
+- **TikTok, watermark-free** — Clean video, plus an audio-only MP3 option. See `docs/TIKTOK-EXTRACTION.md` for what was verified and when.
 - **Duplicate-free quality list** — Deduplicates variants by resolution so the same quality never appears twice.
 - **Animated GIF support** — GIFs on X are stored as silent MP4s; myDownloader handles them correctly.
 - **Progress indicator** — Real-time download progress bar with percentage, streamed in chunks.
@@ -22,7 +23,7 @@ myDownloader is a Progressive Web App that lets you download videos from X (Twit
 - **Download history stored locally** — History lives in `localStorage` on your device only. Clear it any time from Settings.
 
 ### Experience
-- **Android Share Sheet integration** — Share any X post directly to myDownloader from the X app; the URL auto-populates and lookup begins immediately.
+- **Android Share Sheet integration** — Share a post directly to myDownloader from the X or TikTok app; the URL auto-populates and lookup begins immediately.
 - **Installable PWA** — Add to Home Screen on Android or iOS for a native app feel, including splash screen and standalone mode.
 - **iOS-compatible** — On iOS, the video opens in a new tab; long-press → Save to Photos or Download Linked File.
 - **Tweet preview** — Thumbnail, author name, handle, and tweet text shown before you download so you always know what you're getting.
@@ -221,7 +222,7 @@ If you fork this and want stricter access control, you can add a static `Authori
 
 myDownloader registers as a Web Share Target. On Android, after installing the PWA:
 
-1. Open any X post with a video in the X app
+1. Open a post with a video in the X or TikTok app
 2. Tap **Share**
 3. Choose **myDownloader** from the share sheet
 4. The URL is auto-populated and the lookup begins immediately
@@ -233,6 +234,7 @@ This is configured in `vite.config.js` via the `share_target` field in the PWA m
 ## Roadmap
 
 - [x] X (Twitter) video download — all qualities
+- [x] TikTok video download — watermark-free, all gears, audio-only MP3
 - [x] Cloudflare Worker proxy (CORS + Referer fix + `?tag=` stripping)
 - [x] Android Share Sheet integration
 - [x] Download history (localStorage)

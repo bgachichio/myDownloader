@@ -1,15 +1,49 @@
 // ─── myDownloader · api.js ────────────────────────────────────────────────────
-// All X calls are proxied through our Cloudflare Worker because:
-//   1. cdn.syndication.twimg.com blocks browser CORS requests
-//   2. video.twimg.com returns 403 without a valid Referer + without ?tag= stripped
+// Every call is proxied through our Cloudflare Worker because the source CDNs
+// block the browser directly:
+//   X       cdn.syndication.twimg.com blocks CORS; video.twimg.com needs a
+//           Referer and a stripped ?tag=
+//   TikTok  the signed media URL is bound to the cookie issued with the page,
+//           and its CDN pins Access-Control-Allow-Origin to tiktok.com
 //
-// Worker handles both. Update WORKER_URL after deploying worker.js to Cloudflare.
+// Override at build time with VITE_WORKER_URL. The default is the live Worker.
 
-const WORKER_URL = 'https://mydownloader-proxy.YOUR-SUBDOMAIN.workers.dev';
+const WORKER_URL =
+  import.meta.env?.VITE_WORKER_URL?.replace(/\/+$/, '') ||
+  'https://mydownloader-proxy.brian-fc6.workers.dev';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 export function isXUrl(url = '') {
   return /(?:x\.com|twitter\.com)\/.+\/status\/\d+/.test(url.trim());
+}
+
+export function isTikTokUrl(url = '') {
+  return /(?:^|\/\/)(?:www\.|vm\.|vt\.|m\.)?tiktok\.com\//i.test(url.trim());
+}
+
+export function isYouTubeUrl(url = '') {
+  return /(?:youtube\.com\/(?:shorts\/|watch\?v=|live\/)|youtu\.be\/)[\w-]{6,}/i.test(url.trim());
+}
+
+export function isSupportedUrl(url = '') {
+  return isXUrl(url) || isTikTokUrl(url) || isYouTubeUrl(url);
+}
+
+// YouTube refuses datacentre traffic with a bot wall, and its high-quality
+// streams arrive as separate video and audio tracks that must be muxed. A
+// Cloudflare Worker can do neither. YouTube therefore runs through the local
+// yt-dlp helper, on your own machine and your own IP.
+const LOCAL_API =
+  import.meta.env?.VITE_LOCAL_API?.replace(/\/+$/, '') || 'http://localhost:3001';
+
+export async function isLocalHelperRunning() {
+  try {
+    const res = await fetch(`${LOCAL_API}/api/health`, { signal: AbortSignal.timeout(1500) });
+    if (!res.ok) return { running: false };
+    return { running: true, ...(await res.json()) };
+  } catch {
+    return { running: false };
+  }
 }
 
 export function extractTweetId(url = '') {
@@ -65,7 +99,12 @@ function parseVideoVariants(tweetData) {
           else if (h >= 240)  quality = '240p';
           else if (w > 0)     quality = `${w}×${h}`;
           else                quality = 'SD';
-          return { url: v.url, quality, bitrate: v.bitrate || 0, width: w, height: h };
+          return {
+            url: v.url,
+            downloadUrl: `${WORKER_URL}/download?url=${encodeURIComponent(v.url)}`,
+            ext: 'mp4',
+            quality, bitrate: v.bitrate || 0, width: w, height: h,
+          };
         })
         .sort((a, b) => b.bitrate - a.bitrate);
 
@@ -100,6 +139,7 @@ export async function fetchXVideo(rawUrl) {
   }
 
   return {
+    provider: 'x',
     variants, isGif,
     tweetText:    data.text || '',
     authorName:   data.user?.name || '',
@@ -108,16 +148,109 @@ export async function fetchXVideo(rawUrl) {
   };
 }
 
-// ── Step 2: Download video via Worker proxy ───────────────────────────────────
-// Routes through Worker so it can strip ?tag= and send the correct Referer.
-export async function downloadVideo(videoUrl, filename, onProgress) {
+// ── TikTok: resolve a post to its variants ───────────────────────────────────
+export async function fetchTikTokVideo(rawUrl) {
+  let res;
+  try {
+    res = await fetch(`${WORKER_URL}/tiktok/resolve?url=${encodeURIComponent(rawUrl.trim())}`);
+  } catch {
+    throw new Error('Network error — check your connection and try again.');
+  }
+
+  let data;
+  try { data = await res.json(); } catch {
+    throw new Error('Unexpected response. Try again.');
+  }
+  if (!res.ok || data.error) {
+    throw new Error(data?.error || `Could not fetch that post (${res.status}).`);
+  }
+
+  const variants = data.variants.map(v => ({
+    quality: v.codec === 'h265' ? `${v.quality} · HEVC` : v.quality,
+    bitrate: v.bitrate,
+    ext: 'mp4',
+    downloadUrl:
+      `${WORKER_URL}/tiktok/download?url=${encodeURIComponent(data.pageUrl)}` +
+      `&gear=${encodeURIComponent(v.gear)}`,
+  }));
+
+  return {
+    provider: 'tiktok',
+    variants,
+    isGif: false,
+    tweetText:    data.caption || '',
+    authorName:   data.authorName || '',
+    authorHandle: data.authorHandle || '',
+    thumbnailUrl: data.thumbnailUrl || null,
+    mediaId:      data.id,
+  };
+}
+
+// ── YouTube: resolve via the local helper ────────────────────────────────────
+export async function fetchYouTubeVideo(rawUrl) {
+  const url = rawUrl.trim();
+  const health = await isLocalHelperRunning();
+
+  if (!health.running) {
+    throw new Error(
+      'YouTube needs the local helper. Run "npm run server" on your computer, ' +
+      'then try again. X and TikTok work without it.'
+    );
+  }
+  if (health.ffmpeg === false) {
+    throw new Error('ffmpeg is not installed. Without it YouTube downloads cannot carry sound above 360p.');
+  }
+
+  let res;
+  try {
+    res = await fetch(`${LOCAL_API}/api/info`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+  } catch {
+    throw new Error('Could not reach the local helper. Is it still running?');
+  }
+
+  const data = await res.json();
+  if (!res.ok || data.error) throw new Error(data?.error || 'Could not read that YouTube link.');
+
+  const qualities = data.qualities?.length ? data.qualities : [{ height: 720, quality: '720p' }];
+
+  return {
+    provider: 'youtube',
+    isGif: false,
+    variants: qualities.map(q => ({
+      quality: q.quality,
+      bitrate: 0,
+      ext: 'mp4',
+      downloadUrl:
+        `${LOCAL_API}/api/download?url=${encodeURIComponent(url)}&quality=${q.height}`,
+    })),
+    tweetText:    data.title || '',
+    authorName:   data.uploader || '',
+    authorHandle: (data.uploader || 'youtube').replace(/\s+/g, ''),
+    thumbnailUrl: data.thumbnail || null,
+    mediaId:      'yt',
+  };
+}
+
+// ── Dispatcher: one entry point for every provider ───────────────────────────
+export async function fetchMedia(rawUrl) {
+  const url = rawUrl.trim();
+  if (isTikTokUrl(url))  return fetchTikTokVideo(url);
+  if (isYouTubeUrl(url)) return fetchYouTubeVideo(url);
+  if (isXUrl(url))       return fetchXVideo(url);
+  throw new Error('Paste a link from X, TikTok or YouTube.');
+}
+
+// ── Step 2: Download through the Worker ──────────────────────────────────────
+// Provider-agnostic: each variant already carries the proxy URL that fetches it.
+export async function downloadFile(proxyUrl, filename, onProgress) {
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
-  // Build the proxied URL
-  const proxyUrl = `${WORKER_URL}/download?url=${encodeURIComponent(videoUrl)}`;
-
   if (isIOS) {
-    // iOS can't blob-download — open the proxy URL in a new tab instead
+    // iOS cannot blob-download — open the proxy URL in a new tab instead
     window.open(proxyUrl, '_blank');
     return { method: 'tab' };
   }
