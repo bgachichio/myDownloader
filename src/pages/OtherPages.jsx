@@ -4,7 +4,7 @@ import {
   X, Trash2, ExternalLink, Clock, Settings2, ChevronDown, Share2
 } from 'lucide-react';
 import Footer, { FooterHighlighted } from '../components/Footer';
-import { fetchXVideo, downloadVideo, isXUrl, extractTweetId } from '../lib/api';
+import { fetchMedia, downloadFile, isSupportedUrl, extractTweetId } from '../lib/api';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function Banner({ type, message, onClose }) {
@@ -77,8 +77,8 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
     const trimmed = url.trim();
     if (!trimmed) { inputRef.current?.focus(); return; }
 
-    if (!isXUrl(trimmed)) {
-      setBanner({ type: 'error', message: 'myDownloader currently supports X (Twitter) posts only. Paste an x.com/… link.' });
+    if (!isSupportedUrl(trimmed)) {
+      setBanner({ type: 'error', message: 'Paste a post link from X, TikTok or YouTube — e.g. x.com/…/status/…, tiktok.com/@user/video/… or youtube.com/shorts/…' });
       return;
     }
 
@@ -87,7 +87,7 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
     setVideoInfo(null);
 
     try {
-      const info = await fetchXVideo(trimmed);
+      const info = await fetchMedia(trimmed);
       setVideoInfo(info);
       setSelectedQ(0);
       setPhase('ready');
@@ -100,17 +100,17 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
   // ── Step 2: Download chosen quality ──────────────────────────────────────
   const handleDownload = async () => {
     const variant = videoInfo.variants[selectedQ];
-    const handle   = (videoInfo.authorHandle || 'x').replace(/[^a-zA-Z0-9_]/g, '');
-    const id       = extractTweetId(url) || 'video';
+    const handle   = (videoInfo.authorHandle || 'video').replace(/[^a-zA-Z0-9_]/g, '');
+    const id       = videoInfo.mediaId || extractTweetId(url) || 'video';
     const qLabel   = variant.quality.replace(/[^a-zA-Z0-9]/g, '');
-    const filename = `${handle}_${id}_${qLabel}.mp4`;
+    const filename = `${handle}_${id}_${qLabel}.${variant.ext || 'mp4'}`;
 
     setPhase('downloading');
     setProgress(0);
     setBanner(null);
 
     try {
-      const result = await downloadVideo(variant.url, filename, setProgress);
+      const result = await downloadFile(variant.downloadUrl, filename, setProgress);
 
       if (result.method === 'tab') {
         setBanner({ type: 'info', message: 'iOS: long-press the video → "Save to Photos" or "Download Linked File".' });
@@ -122,7 +122,7 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
       try {
         const hist = JSON.parse(localStorage.getItem('myd_history') || '[]');
         hist.unshift({
-          url, title: `@${handle} · ${variant.quality}`,
+          url, title: `@${handle} · ${variant.quality}`, provider: videoInfo.provider,
           quality: variant.quality, date: Date.now(), filename,
         });
         localStorage.setItem('myd_history', JSON.stringify(hist.slice(0, 50)));
@@ -167,7 +167,7 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
         <h1 className="text-xl font-black mb-0.5" style={{ color: '#0f1923', letterSpacing: '-0.02em' }}>
           X Video Downloader
         </h1>
-        <p className="text-xs" style={{ color: '#94a3b8' }}>Paste an X post link · pick quality · download</p>
+        <p className="text-xs" style={{ color: '#94a3b8' }}>Paste an X, TikTok or YouTube link · pick quality · download</p>
       </div>
 
       <div className="px-4 py-3 flex flex-col gap-3">
@@ -186,7 +186,7 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
               value={url}
               onChange={e => { setUrl(e.target.value); setVideoInfo(null); setPhase('idle'); setBanner(null); setSharedUrl?.(e.target.value); }}
               onKeyDown={e => e.key === 'Enter' && phase === 'idle' && handleFetch()}
-              placeholder="https://x.com/user/status/…"
+              placeholder="x.com · tiktok.com · youtube.com/shorts"
               className="url-input"
               style={{ paddingLeft: '38px', fontSize: 14 }}
             />
@@ -299,7 +299,7 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
           {/* Status line */}
           <p className="text-xs text-center mt-2" style={{ color: '#94a3b8' }}>
             {videoInfo
-              ? `𝕏 · ${videoInfo.variants[selectedQ]?.quality} · ${(videoInfo.variants[selectedQ]?.bitrate / 1000000).toFixed(1)} Mbps`
+              ? `${videoInfo.provider === 'tiktok' ? '♪' : videoInfo.provider === 'youtube' ? '▶' : '𝕏'} · ${videoInfo.variants[selectedQ]?.quality}${videoInfo.variants[selectedQ]?.bitrate ? ` · ${(videoInfo.variants[selectedQ].bitrate / 1000000).toFixed(1)} Mbps` : ''}`
               : '𝕏 · Direct from X CDN · no backend'}
           </p>
         </div>
