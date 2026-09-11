@@ -8,6 +8,28 @@ myDownloader is a Progressive Web App that lets you download videos from X and T
 
 ---
 
+## Install
+
+**Android (Chrome):**
+
+| Step | Expect |
+|---|---|
+| Open the site, Chrome's menu → **Install app** (or the install icon in the address bar) | A one-tap confirmation |
+| Confirm | The icon lands on the home screen |
+| Open it from there | Runs full-screen, no browser chrome |
+
+**iPhone (Safari — not Chrome):**
+
+| Step | Expect |
+|---|---|
+| Open the site in **Safari** | iOS only installs from Safari's own share sheet; Chrome on iPhone is a Safari wrapper and cannot add anything to the home screen itself |
+| **Share** → **Add to Home Screen** | |
+| Open it from the home screen icon | Runs full-screen, no Safari address bar |
+
+Downloading behaves the same either way, with one platform difference the app already accounts for: iOS won't let a background fetch hand a file straight to the Files app, so on iPhone a download opens the video in a new tab and lets iOS's own share sheet save it from there — that's existing behaviour, not something this install step changes.
+
+---
+
 ## Features
 
 ### Downloading
