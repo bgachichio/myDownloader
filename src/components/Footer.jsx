@@ -7,7 +7,7 @@ export default function Footer() {
       style={{ borderTop: '1px solid #e8f0eb', background: 'white' }}>
       <span className="flex items-center gap-1.5" style={{ color: '#6b7280', fontSize: 13 }}>
         Made with <Heart size={12} fill="#ef4444" stroke="none" /> by{' '}
-        <a href="https://linkedin.com/in/briangachichio" target="_blank" rel="noopener noreferrer"
+        <a href="https://x.com/b_gachichio" target="_blank" rel="noopener noreferrer"
           style={{ color: '#237352', fontWeight: 600 }}>Brian Gachichio</a>
       </span>
       <a href="https://paystack.shop/pay/gachichio" target="_blank" rel="noopener noreferrer"

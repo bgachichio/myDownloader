@@ -7,7 +7,6 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "server": "node server.js",
     "test:worker": "node --test worker/test/**/*.test.js",
     "verify:egress": "./scripts/verify-egress.sh"
   },
@@ -31,15 +30,13 @@
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
-    "cors": "^2.8.5",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
-    "express": "^4.21.2",
     "globals": "^16.5.0",
     "vite": "^7.3.1"
   },
-  "description": "PWA for downloading videos from X, TikTok and YouTube Shorts",
+  "description": "PWA for downloading video from X and TikTok",
   "author": "Brian Gachichio <brian@gachichio.com>",
   "homepage": "https://mydownloader-f6a9e.web.app",
   "repository": {

@@ -78,7 +78,7 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
     if (!trimmed) { inputRef.current?.focus(); return; }
 
     if (!isSupportedUrl(trimmed)) {
-      setBanner({ type: 'error', message: 'Paste a post link from X, TikTok or YouTube — e.g. x.com/…/status/…, tiktok.com/@user/video/… or youtube.com/shorts/…' });
+      setBanner({ type: 'error', message: 'Paste a post link from X or TikTok — e.g. x.com/…/status/… or tiktok.com/@user/video/…' });
       return;
     }
 
@@ -167,7 +167,7 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
         <h1 className="text-xl font-black mb-0.5" style={{ color: '#0f1923', letterSpacing: '-0.02em' }}>
           Video Downloader
         </h1>
-        <p className="text-xs" style={{ color: '#94a3b8' }}>Paste an X, TikTok or YouTube link · pick quality · download</p>
+        <p className="text-xs" style={{ color: '#94a3b8' }}>Paste an X or TikTok link · pick quality · download</p>
       </div>
 
       <div className="px-4 py-3 flex flex-col gap-3">
@@ -186,7 +186,7 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
               value={url}
               onChange={e => { setUrl(e.target.value); setVideoInfo(null); setPhase('idle'); setBanner(null); setSharedUrl?.(e.target.value); }}
               onKeyDown={e => e.key === 'Enter' && phase === 'idle' && handleFetch()}
-              placeholder="x.com · tiktok.com · youtube.com/shorts"
+              placeholder="x.com · tiktok.com"
               className="url-input"
               style={{ paddingLeft: '38px', fontSize: 14 }}
             />
@@ -299,8 +299,8 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
           {/* Status line */}
           <p className="text-xs text-center mt-2" style={{ color: '#94a3b8' }}>
             {videoInfo
-              ? `${videoInfo.provider === 'tiktok' ? '♪' : videoInfo.provider === 'youtube' ? '▶' : '𝕏'} · ${videoInfo.variants[selectedQ]?.quality}${videoInfo.variants[selectedQ]?.bitrate ? ` · ${(videoInfo.variants[selectedQ].bitrate / 1000000).toFixed(1)} Mbps` : ''}`
-              : 'X · TikTok · YouTube Shorts'}
+              ? `${videoInfo.provider === 'tiktok' ? '♪' : '𝕏'} · ${videoInfo.variants[selectedQ]?.quality}${videoInfo.variants[selectedQ]?.bitrate ? ` · ${(videoInfo.variants[selectedQ].bitrate / 1000000).toFixed(1)} Mbps` : ''}`
+              : 'X · TikTok'}
           </p>
         </div>
 
@@ -466,7 +466,7 @@ export function SettingsPage() {
         </Section>
 
         <Section title="About">
-          <Row label="Platform support" desc="X (Twitter) · more platforms coming soon">
+          <Row label="Platform support" desc="X · TikTok">
             <span className="text-xs font-bold px-2 py-1 rounded-lg" style={{ background: '#e8f5ee', color: '#237352' }}>𝕏</span>
           </Row>
           <Row label="Version" last>

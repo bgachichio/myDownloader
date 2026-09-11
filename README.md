@@ -4,7 +4,7 @@
 
 **Live at:** [mydownloader-f6a9e.web.app](https://mydownloader-f6a9e.web.app)
 
-myDownloader is a Progressive Web App that lets you download videos from X (Twitter) and TikTok posts in any available quality. TikTok downloads arrive without the watermark, and the audio can be taken on its own as an MP3. Paste a link, pick your resolution, and the video saves straight to your device. There is no server to maintain, no subscription, no sign-in, and no ads — just a fast, private tool that works on Android, iOS, and desktop.
+myDownloader is a Progressive Web App that lets you download videos from X and TikTok posts in any available quality. TikTok downloads arrive without the watermark. Paste a link, pick your resolution, and the video saves straight to your device — no server to maintain, no subscription, no sign-in, no ads.
 
 ---
 
@@ -12,7 +12,7 @@ myDownloader is a Progressive Web App that lets you download videos from X (Twit
 
 ### Downloading
 - **Multi-quality selection** — Every resolution the platform provides is shown, sorted best-first. You pick.
-- **TikTok, watermark-free** — Clean video, plus an audio-only MP3 option. See `docs/TIKTOK-EXTRACTION.md` for what was verified and when.
+- **TikTok, watermark-free** — Clean video, every gear. See `docs/TIKTOK-EXTRACTION.md` for what was verified and when.
 - **Duplicate-free quality list** — Deduplicates variants by resolution so the same quality never appears twice.
 - **Animated GIF support** — GIFs on X are stored as silent MP4s; myDownloader handles them correctly.
 - **Progress indicator** — Real-time download progress bar with percentage, streamed in chunks.
@@ -63,7 +63,7 @@ myDownloader is a Progressive Web App that lets you download videos from X (Twit
 └───────────────────────────┬──────────────────────────────┘
                             │ direct CDN stream
 ┌───────────────────────────▼──────────────────────────────┐
-│              X (Twitter) Infrastructure                   │
+│                    X Infrastructure                       │
 │   cdn.syndication.twimg.com  ·  video.twimg.com CDN      │
 │              (X hosts and serves the content)            │
 └──────────────────────────────────────────────────────────┘
@@ -233,8 +233,8 @@ This is configured in `vite.config.js` via the `share_target` field in the PWA m
 
 ## Roadmap
 
-- [x] X (Twitter) video download — all qualities
-- [x] TikTok video download — watermark-free, all gears, audio-only MP3
+- [x] X video download — all qualities
+- [x] TikTok video download — watermark-free, all gears
 - [x] Cloudflare Worker proxy (CORS + Referer fix + `?tag=` stripping)
 - [x] Android Share Sheet integration
 - [x] Download history (localStorage)
@@ -242,9 +242,6 @@ This is configured in `vite.config.js` via the `share_target` field in the PWA m
 - [x] iOS support (new-tab fallback)
 - [x] Worker rate limiting + input validation
 - [ ] Instagram Reels support
-- [ ] TikTok support
-- [ ] YouTube support (requires authenticated backend)
-- [ ] Audio-only download mode
 
 ---
 

@@ -14,7 +14,7 @@ export default defineConfig({
       manifest: {
         name: 'myDownloader',
         short_name: 'myDownloader',
-        description: 'Download videos from X, TikTok and YouTube Shorts — watermark-free',
+        description: 'Download videos from X and TikTok — watermark-free',
         theme_color: '#237352',
         background_color: '#ffffff',
         display: 'standalone',

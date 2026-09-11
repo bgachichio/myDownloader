@@ -6,7 +6,7 @@ const features = [
   { icon: Shield, title: 'Nothing Stored',   desc: 'Files stream straight through to your device. Nothing is kept.', color: '#237352' },
   { icon: Server, title: 'No Sign-In',       desc: 'No account, no tracking, no ads. Public posts only.',       color: '#2d9164' },
   { icon: Zap,    title: 'Instant',          desc: 'Video options appear in seconds. No waiting, no queues.',  color: '#1a5a3f' },
-  { icon: Download,'title': 'All Qualities', desc: 'Every available resolution: 240p up to 1080p HD.',        color: '#237352' },
+  { icon: Download,'title': 'All Qualities', desc: 'Every resolution the post offers, up to 1080p HD.',        color: '#237352' },
 ];
 
 export default function LandingPage({ onNavigate }) {
@@ -25,16 +25,16 @@ export default function LandingPage({ onNavigate }) {
 
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-5"
           style={{ background: '#e8f5ee', color: '#237352', border: '1px solid #c6e0d0' }}>
-          𝕏 · ♪ · ▶ · No cost · No tracking · No sign-in
+          𝕏 · ♪ · No cost · No tracking · No sign-in
         </div>
 
         <h1 className="text-3xl sm:text-4xl font-black mb-3 leading-tight"
           style={{ color: '#0f1923', letterSpacing: '-0.03em' }}>
-          Download X, TikTok and<br />YouTube Shorts<br />
+          Download X and TikTok<br />
           <span style={{ color: '#237352' }}>directly to your device</span>
         </h1>
-        <p className="text-sm mb-8 max-w-xs" style={{ color: '#64748b', lineHeight: 1.7 }}>
-          Paste a link from X, TikTok or YouTube Shorts. Pick your quality. Every download arrives as one file with the sound already in it, and TikTok comes without the watermark.
+        <p className="text-sm mb-8 max-w-xs text-justify" style={{ color: '#64748b', lineHeight: 1.7 }}>
+          Paste a link, pick your quality. Every file arrives with sound already in it, and TikTok comes without the watermark.
         </p>
 
         {/* ── CTA ── */}
@@ -48,7 +48,7 @@ export default function LandingPage({ onNavigate }) {
                   type="url" value={url}
                   onChange={e => setUrl(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleGo()}
-                  placeholder="x.com · tiktok.com · youtube.com/shorts"
+                  placeholder="x.com · tiktok.com"
                   className="url-input"
                   style={{ paddingLeft: '34px', borderRadius: '10px', fontSize: 14, padding: '12px 12px 12px 34px' }}
                 />
@@ -61,7 +61,7 @@ export default function LandingPage({ onNavigate }) {
             </div>
           </div>
           <p className="text-xs mt-2.5 text-center" style={{ color: '#94a3b8' }}>
-            Public posts on X and TikTok · YouTube Shorts via the local helper
+            Public posts only. Nothing stored.
           </p>
         </div>
 
@@ -69,15 +69,11 @@ export default function LandingPage({ onNavigate }) {
         <div className="flex gap-2 mt-5">
           <span className="px-3 py-1.5 rounded-full text-sm font-bold"
             style={{ background: '#0f1923', color: 'white' }}>
-            𝕏 X (Twitter)
+            𝕏
           </span>
           <span className="px-3 py-1.5 rounded-full text-sm font-bold"
             style={{ background: '#237352', color: 'white' }}>
             ♪ TikTok
-          </span>
-          <span className="px-3 py-1.5 rounded-full text-sm font-bold"
-            style={{ background: '#c4302b', color: 'white' }}>
-            ▶ Shorts
           </span>
         </div>
       </section>
@@ -108,7 +104,7 @@ export default function LandingPage({ onNavigate }) {
         <p className="text-xs opacity-75 mb-4">Works on Android, iPhone, and desktop.</p>
         <div className="flex flex-col gap-2 text-left mb-4">
           {[
-            'Copy a post URL from X, TikTok or YouTube Shorts',
+            'Copy a post URL from X or TikTok',
             'Paste it in myDownloader',
             'Pick quality and tap Download',
           ].map((step, i) => (
