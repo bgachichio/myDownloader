@@ -2,7 +2,7 @@
 
 > A zero-cost PWA for downloading video and audio from X and TikTok — directly to your device, watermark-free.
 
-**Live at:** [mydownloader-f6a9e.web.app](https://mydownloader-f6a9e.web.app)
+**Live at:** [mydownloader.gachichio.org](https://mydownloader.gachichio.org)
 
 myDownloader is a Progressive Web App that lets you download videos from X and TikTok posts in any available quality. TikTok downloads arrive without the watermark. Paste a link, pick your resolution, and the video saves straight to your device — no server to maintain, no subscription, no sign-in, no ads.
 
