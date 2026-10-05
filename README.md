@@ -41,7 +41,7 @@ Downloading behaves the same either way, with one platform difference the app al
 
 ### Privacy & Architecture
 - **No backend of your own** — Tweet metadata and video streams are proxied through a single Cloudflare Worker (40 lines of code, free tier).
-- **No tracking, no analytics** — Nothing is logged. The Worker reads your request and forwards it; that's it.
+- **No ad trackers, anonymous visit counts** — Page views and button clicks are counted by Tally (first-party, no cookies, no personal data; see https://hi.gachichio.org). It never receives the links you paste or the files you save. The Worker reads your request and forwards it; that's it.
 - **Download history stored locally** — History lives in `localStorage` on your device only. Clear it any time from Settings.
 
 ### Experience

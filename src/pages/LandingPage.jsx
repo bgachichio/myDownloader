@@ -4,7 +4,7 @@ import Footer from '../components/Footer';
 
 const features = [
   { icon: Shield, title: 'Nothing Stored',   desc: 'Files stream straight through to your device. Nothing is kept.', color: '#237352' },
-  { icon: Server, title: 'No Sign-In',       desc: 'No account, no tracking, no ads. Public posts only.',       color: '#2d9164' },
+  { icon: Server, title: 'No Sign-In',       desc: 'No account, no ads, no ad trackers. Visits are counted anonymously. Public posts only.',       color: '#2d9164' },
   { icon: Zap,    title: 'Instant',          desc: 'Video options appear in seconds. No waiting, no queues.',  color: '#1a5a3f' },
   { icon: Download,'title': 'All Qualities', desc: 'Every resolution the post offers, up to 1080p HD.',        color: '#237352' },
 ];
@@ -25,7 +25,7 @@ export default function LandingPage({ onNavigate }) {
 
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-5"
           style={{ background: '#e8f5ee', color: '#237352', border: '1px solid #c6e0d0' }}>
-          𝕏 · ♪ · No cost · No tracking · No sign-in
+          𝕏 · ♪ · No cost · No ads · No sign-in
         </div>
 
         <h1 className="text-3xl sm:text-4xl font-black mb-3 leading-tight"
@@ -53,7 +53,7 @@ export default function LandingPage({ onNavigate }) {
                   style={{ paddingLeft: '34px', borderRadius: '10px', fontSize: 14, padding: '12px 12px 12px 34px' }}
                 />
               </div>
-              <button onClick={handleGo} disabled={!url.trim()} className="btn-primary flex-shrink-0"
+              <button onClick={handleGo} disabled={!url.trim()} data-tally="start-download" className="btn-primary flex-shrink-0"
                 style={{ borderRadius: '10px', padding: '12px 18px', fontSize: 14 }}>
                 <Download size={15} />
                 <span className="sm:inline hidden">Download</span>
@@ -115,7 +115,7 @@ export default function LandingPage({ onNavigate }) {
             </div>
           ))}
         </div>
-        <button onClick={() => onNavigate('downloader')}
+        <button onClick={() => onNavigate('downloader')} data-tally="try-it"
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm"
           style={{ background: 'white', color: '#237352' }}>
           Try it now <ArrowRight size={14} />

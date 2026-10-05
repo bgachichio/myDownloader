@@ -128,6 +128,7 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
         localStorage.setItem('myd_history', JSON.stringify(hist.slice(0, 50)));
       } catch { /* storage full — ignore */ }
 
+      window.tally?.click('downloaded'); // a completed download is the customer action Tally counts; the link and file name are never sent
       setPhase('done');
     } catch (err) {
       setBanner({ type: 'error', message: err.message });
@@ -258,6 +259,7 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
           {phase === 'idle' || phase === 'fetching' ? (
             <button
               onClick={handleFetch}
+              data-tally="find-video"
               disabled={!url.trim() || phase === 'fetching'}
               className="btn-primary w-full"
               style={{
@@ -274,6 +276,7 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
             <div className="flex gap-2">
               <button
                 onClick={handleDownload}
+                data-tally="download"
                 disabled={phase === 'downloading'}
                 className="btn-primary flex-1"
                 style={{
@@ -316,7 +319,7 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
         )}
 
         <p className="text-xs text-center pb-2" style={{ color: '#b0bec5' }}>
-          ⚡ Nothing stored · no sign-in · no cost · no tracking
+          ⚡ Nothing stored · no sign-in · no cost · no ads
         </p>
       </div>
 
@@ -445,7 +448,7 @@ export function SettingsPage() {
       </div>
       <div className="px-4 pb-4">
         <Section title="How it works">
-          <Row label="No backend" desc="Videos are fetched directly from X's own CDN. No server, no cost, no tracking.">
+          <Row label="No backend" desc="Videos are fetched directly from X's own CDN. No server, no cost, no ad trackers.">
             <span className="text-xs font-bold px-2 py-1 rounded-lg" style={{ background: '#e8f5ee', color: '#237352' }}>✓</span>
           </Row>
           <Row label="No sign-in" desc="No account, no API key, no rate limit for personal use." last>

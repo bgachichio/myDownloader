@@ -41,6 +41,9 @@ export default function App() {
     }
   }, []);
 
+  // Tally counts each screen as a page (the app changes screens without changing the address). Screen names only, never user input.
+  useEffect(() => { window.tally?.page(activePage === 'home' ? '/' : `/${activePage}`); }, [activePage]);
+
   const PageComponent = pages[activePage] || LandingPage;
 
   const handleNavigate = (page, url = '') => {
