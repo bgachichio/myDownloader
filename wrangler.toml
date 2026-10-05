@@ -3,5 +3,7 @@ main = "worker/index.js"
 compatibility_date = "2026-09-05"
 compatibility_flags = ["nodejs_compat"]
 
+# Off on purpose: Workers Logs can record request URLs, and a request here carries the link someone pasted.
+# The app's privacy copy depends on this staying false (05-10-2026).
 [observability]
-enabled = true
+enabled = false
