@@ -2,7 +2,13 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
-import path from 'path'
+import { fileURLToPath } from 'node:url'
+import { SUPPORT } from './src/config/support.js'
+
+// builder 6.1: the production build fails if any Support value is empty.
+for (const [k, v] of Object.entries(SUPPORT)) {
+  if (!v) throw new Error(`src/config/support.js: ${k} is empty`)
+}
 
 export default defineConfig({
   plugins: [
@@ -62,6 +68,6 @@ export default defineConfig({
     }),
   ],
   resolve: {
-    alias: { '@': path.resolve(__dirname, './src') },
+    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
 })

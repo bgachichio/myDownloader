@@ -1,22 +1,20 @@
 {
   "name": "mydownloader",
   "private": true,
-  "version": "6.3.0",
+  "version": "7.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "test:e2e": "playwright test",
+    "lint": "eslint src worker tests vite.config.js eslint.config.js playwright.config.js",
     "test:worker": "node --test worker/test/**/*.test.js",
+    "test": "node --test worker/test/**/*.test.js src/config/*.test.js",
     "verify:egress": "./scripts/verify-egress.sh"
   },
   "dependencies": {
-    "@radix-ui/react-dialog": "^1.1.15",
-    "@radix-ui/react-slot": "^1.2.4",
-    "@radix-ui/react-tooltip": "^1.2.8",
     "@tailwindcss/vite": "^4.2.1",
-    "axios": "^1.13.6",
-    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.577.0",
     "react": "^19.2.0",
@@ -27,6 +25,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.63.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",

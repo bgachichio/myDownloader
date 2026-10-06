@@ -1,0 +1,23 @@
+# Search crawlers are welcome. Training crawlers are blocked (the same policy Brian confirmed for myPDF on 01-10-2026; applied here 07-10-2026, change it in DEPLOY.md and here if he decides otherwise).
+User-agent: Googlebot
+Allow: /
+User-agent: Bingbot
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: Claude-SearchBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: GPTBot
+Disallow: /
+User-agent: ClaudeBot
+Disallow: /
+User-agent: CCBot
+Disallow: /
+User-agent: Google-Extended
+Disallow: /
+User-agent: *
+Allow: /
+
+Sitemap: https://mydownloader.gachichio.org/sitemap.xml

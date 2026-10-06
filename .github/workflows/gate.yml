@@ -1,0 +1,23 @@
+# Commit gate (builder 7.1 item 6, developer 9.2). Fails closed: secrets, dependencies, lint, tests, build, then the browser checks.
+name: gate
+on: [push, pull_request]
+permissions: { contents: read }
+jobs:
+  gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.12" }
+      - name: Pre-commit (secrets, private keys, large files)
+        run: pip install pre-commit && pre-commit run --all-files
+      - uses: actions/setup-node@v5
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm audit --audit-level=high
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test

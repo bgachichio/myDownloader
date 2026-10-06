@@ -7,3 +7,9 @@ compatibility_flags = ["nodejs_compat"]
 # The app's privacy copy depends on this staying false (05-10-2026).
 [observability]
 enabled = false
+
+# 60 requests a minute per address. The proxy streams video, so bandwidth is what an abuser would spend (builder 6.3).
+[[ratelimits]]
+name = "LIMITER"
+namespace_id = "1002"
+simple = { limit = 60, period = 60 }

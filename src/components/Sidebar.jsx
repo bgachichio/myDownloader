@@ -1,6 +1,7 @@
-import { useState } from 'react';
 import { Download, Home, Settings, History, Coffee, Menu, X } from 'lucide-react';
 import Mark from './Mark';
+import { useApp } from '../hooks/app-context.js';
+import { SUPPORT } from '../config/support';
 
 const navItems = [
   { icon: Home,     label: 'Home',       id: 'home' },
@@ -30,26 +31,28 @@ export function BottomNav({ activePage, onNavigate }) {
 
 // ── Hamburger drawer (desktop / tablet) ─────────────────────────────────────
 export default function Sidebar({ activePage, onNavigate, open, onClose }) {
+  const { setSupportOpen } = useApp();
   if (!open) return null;
   return (
     <>
       <div className="drawer-overlay" onClick={onClose} />
       <aside className="drawer">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 pb-4" style={{ borderBottom: '1px solid #e8f0eb' }}>
+        <div className="flex items-center justify-between p-5 pb-4" style={{ borderBottom: '1px solid var(--c-line)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center pulse-glow-anim" style={{ background: '#237352' }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center pulse-glow-anim" style={{ background: 'var(--c-brand)' }}>
               <Mark size={16} />
             </div>
             <div>
-              <div className="text-base leading-tight" style={{ fontWeight: 800, color: '#0f1923' }}>
-                <span style={{ color: '#0f1923' }}>my</span><span style={{ color: '#237352' }}>Downloader</span>
+              <div className="text-base leading-tight" style={{ fontWeight: 800, color: 'var(--c-ink)' }}>
+                <span style={{ color: 'var(--c-ink)' }}>my</span><span style={{ color: 'var(--c-brand-text)' }}>Downloader</span>
               </div>
-              <div className="text-xs" style={{ color: '#94a3b8', fontWeight: 500 }}>Fast · Safe · Free</div>
+              <div className="text-xs" style={{ color: 'var(--c-text3)', fontWeight: 500 }}>Fast · Safe · Free</div>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg" style={{ background: '#f1f5f9' }}>
-            <X size={17} style={{ color: '#64748b' }} />
+          <button onClick={onClose} aria-label="Close menu" className="rounded-lg flex items-center justify-center"
+            style={{ background: 'var(--c-surface-2)', minWidth: 44, minHeight: 44 }}>
+            <X size={17} style={{ color: 'var(--c-text2)' }} />
           </button>
         </div>
 
@@ -61,8 +64,8 @@ export default function Sidebar({ activePage, onNavigate, open, onClose }) {
               onClick={() => { onNavigate(id); onClose(); }}
               className="flex items-center gap-3 w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all"
               style={{
-                background: activePage === id ? '#237352' : 'transparent',
-                color: activePage === id ? 'white' : '#4a5568',
+                background: activePage === id ? 'var(--c-brand)' : 'transparent',
+                color: activePage === id ? 'white' : 'var(--c-text2)',
               }}
             >
               <Icon size={17} />
@@ -73,16 +76,14 @@ export default function Sidebar({ activePage, onNavigate, open, onClose }) {
 
         {/* Footer */}
         <div className="p-4 pt-0">
-          <a
-            href="https://paystack.shop/pay/gachichio"
-            target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-semibold mb-3"
-            style={{ background: '#e8f5ee', color: '#237352' }}
+          <button type="button" onClick={() => { onClose(); setSupportOpen(true); }}
+            className="flex items-center gap-2 w-full px-4 rounded-full text-sm font-semibold mb-3"
+            style={{ minHeight: 44, background: 'var(--c-tint)', color: 'var(--c-brand-text)', border: 'none', cursor: 'pointer' }}
           >
-            <Coffee size={15} /> Buy me a coffee ☕
-          </a>
-          <p className="text-center text-xs" style={{ color: '#b0bec5' }}>
-            Made with ❤️ by <span style={{ color: '#237352', fontWeight: 600 }}>Brian Gachichio</span>
+            <Coffee size={15} /> ☕ Support
+          </button>
+          <p className="text-center text-xs" style={{ color: 'var(--c-faint)' }}>
+            Made with ❤️ by <a href={SUPPORT.authorUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--c-brand-text)', fontWeight: 600 }}>{SUPPORT.authorName}</a>
           </p>
         </div>
       </aside>

@@ -6,17 +6,13 @@
 
 import * as tiktok from './lib/tiktok.js';
 import { handleX } from './lib/x.js';
+import { originAllowed, withCors } from './lib/cors.js';
 
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
+// CORS is added once, in withCors (lib/cors.js), around every response.
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json', ...CORS },
+    headers: { 'Content-Type': 'application/json' },
   });
 
 // Upstream failures are the user's problem to understand, not to debug. Map
@@ -32,11 +28,7 @@ function toMessage(err) {
   return { msg: 'Could not process that link. Try again.', status: 502 };
 }
 
-export default {
-  async fetch(request) {
-    if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
-    if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
-
+async function route(request) {
     const url = new URL(request.url);
 
     if (url.pathname === '/tiktok/resolve') {
@@ -60,9 +52,7 @@ export default {
       }
       try {
         const res = await tiktok.download(target, gear);
-        const headers = new Headers(res.headers);
-        for (const [k, v] of Object.entries(CORS)) headers.set(k, v);
-        return new Response(res.body, { status: res.status, headers });
+        return new Response(res.body, { status: res.status, headers: new Headers(res.headers) });
       } catch (err) {
         const { msg, status } = toMessage(err);
         return json({ error: msg }, status);
@@ -71,5 +61,21 @@ export default {
 
     // Everything else is X, exactly as before: / ?id= and /download?url=
     return handleX(request, url);
+}
+
+export default {
+  async fetch(request, env) {
+    if (!originAllowed(request)) return json({ error: 'Origin not allowed' }, 403);
+    if (request.method === 'OPTIONS') return withCors(new Response(null, { status: 204 }), request);
+    if (request.method !== 'GET') return withCors(json({ error: 'Method not allowed' }, 405), request);
+
+    // Per-address ceiling (60 a minute). The proxy streams video, so bandwidth is what an abuser would spend.
+    if (env?.LIMITER) {
+      const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+      const { success } = await env.LIMITER.limit({ key: ip });
+      if (!success) return withCors(json({ error: 'Too many requests. Wait a minute and try again.' }, 429), request);
+    }
+
+    return withCors(await route(request), request);
   },
 };

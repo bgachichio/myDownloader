@@ -1,10 +1,20 @@
 # myDownloader
 
-> A zero-cost PWA for downloading video and audio from X and TikTok — directly to your device, watermark-free.
+> A zero-cost PWA for downloading video from X and TikTok, directly to your device. TikTok arrives without the watermark.
 
 **Live at:** [mydownloader.gachichio.org](https://mydownloader.gachichio.org)
 
 myDownloader is a Progressive Web App that lets you download videos from X and TikTok posts in any available quality. TikTok downloads arrive without the watermark. Paste a link, pick your resolution, and the video saves straight to your device — no server to maintain, no subscription, no sign-in, no ads.
+
+## Run and roll back
+
+```bash
+npm ci && npm run dev      # local app; npm test, npm run lint, npx playwright test are the gate
+./deploy.sh                # gate, Worker, PWA, checks; rolls the PWA back itself if a check fails
+./rollback.sh              # put the previous PWA release back (about 20 seconds)
+```
+
+Full instructions, troubleshooting and uninstall: [DEPLOY.md](DEPLOY.md).
 
 ---
 
@@ -40,7 +50,7 @@ Downloading behaves the same either way, with one platform difference the app al
 - **Progress indicator** — Real-time download progress bar with percentage, streamed in chunks.
 
 ### Privacy & Architecture
-- **No backend of your own** — Tweet metadata and video streams are proxied through a single Cloudflare Worker (40 lines of code, free tier).
+- **No backend of your own** — Tweet metadata and video streams are proxied through a single Cloudflare Worker (small, free tier).
 - **No ad trackers, anonymous visit counts** — Page views and button clicks are counted by Tally (first-party, no cookies, no personal data; see https://hi.gachichio.org). It never receives the links you paste or the files you save. The Worker reads your request and forwards it, and keeps no log of it (request logging is switched off in `wrangler.toml`; keep it that way).
 - **Download history stored locally** — History lives in `localStorage` on your device only. Clear it any time from Settings.
 
@@ -53,7 +63,7 @@ Downloading behaves the same either way, with one platform difference the app al
 ### Security (Worker)
 - **Strict URL allowlist** — `/download` only proxies `video.twimg.com` — it cannot be abused as a general-purpose proxy.
 - **Input validation** — Tweet IDs validated as numeric snowflakes (max 20 digits); video URLs capped at 512 chars and HTTPS-only.
-- **Rate limiting** — 60 requests/minute per IP enforced in the Worker.
+- **Rate limiting and origins** — 60 requests/minute per IP, and browsers from any site other than this app are refused (403), so the proxy cannot be used as a free relay.
 - **`?tag=` stripping** — X's CDN returns 403 if the `?tag=N` query param is present. The Worker strips it automatically.
 - **Correct `Referer` injection** — `video.twimg.com` rejects requests without `Referer: https://x.com/`. The Worker adds this server-side (browsers block setting it manually).
 

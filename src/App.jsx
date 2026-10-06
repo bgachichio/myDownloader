@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Sidebar, { BottomNav } from './components/Sidebar';
 import Topbar from './components/Topbar';
+import SupportSheet from './components/SupportSheet';
 import LandingPage from './pages/LandingPage';
 import { DownloaderPage, HistoryPage, SettingsPage } from './pages/OtherPages';
 
@@ -26,20 +27,16 @@ function getSharedUrl() {
 }
 
 export default function App() {
-  const [activePage, setActivePage] = useState('home');
-  const [sharedUrl, setSharedUrl]   = useState('');
+  // Android share sheet: /?url=... opens straight on the downloader with the link filled in
+  const [incoming] = useState(() => getSharedUrl());
+  const [activePage, setActivePage] = useState(() => (incoming ? 'downloader' : 'home'));
+  const [sharedUrl, setSharedUrl]   = useState(incoming);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Handle incoming share from Android share sheet
+  // Clean the URL bar after a share, without a reload
   useEffect(() => {
-    const incoming = getSharedUrl();
-    if (incoming) {
-      setSharedUrl(incoming);
-      setActivePage('downloader');
-      // Clean the URL bar without a reload
-      window.history.replaceState({}, '', '/');
-    }
-  }, []);
+    if (incoming) window.history.replaceState({}, '', '/');
+  }, [incoming]);
 
   // Tally counts each screen as a page (the app changes screens without changing the address). Screen names only, never user input.
   useEffect(() => { window.tally?.page(activePage === 'home' ? '/' : `/${activePage}`); }, [activePage]);
@@ -53,7 +50,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#f8fafb' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--c-bg)' }}>
       <Sidebar
         activePage={activePage}
         onNavigate={handleNavigate}
@@ -69,6 +66,7 @@ export default function App() {
         />
       </main>
       <BottomNav activePage={activePage} onNavigate={handleNavigate} />
+      <SupportSheet />
     </div>
   );
 }

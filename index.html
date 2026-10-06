@@ -3,6 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      // Apply the saved lighting and text size before first paint, so nothing flashes.
+      (function () {
+        try {
+          var t = localStorage.getItem('ui.theme') || 'system';
+          var dark = t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.classList.toggle('dark', dark);
+          var f = localStorage.getItem('ui.fontScale') || 'default';
+          document.documentElement.dataset.fontScale = f;
+        } catch (e) {}
+      })();
+    </script>
     <title>myDownloader — X and TikTok downloader</title>
     <meta name="description" content="Download videos from X and TikTok, always with sound, TikTok without the watermark. No sign-in, no ads, no ad trackers. Visits are counted anonymously." />
 
@@ -17,6 +30,9 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16.png" />
     <link rel="canonical" href="https://mydownloader.gachichio.org/" />
 
+    <script type="application/ld+json">
+      {"@context":"https://schema.org","@type":"SoftwareApplication","name":"myDownloader","applicationCategory":"MultimediaApplication","operatingSystem":"Android, iOS, Windows, macOS, Linux (web app)","description":"Save videos from X and TikTok to your phone or laptop. Every file has sound, TikTok comes without the watermark, and there is no sign-in and no ads.","url":"https://mydownloader.gachichio.org/","image":"https://mydownloader.gachichio.org/og-image.png","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Brian Gachichio","url":"https://gachichio.org"}}
+    </script>
     <!-- Open Graph -->
     <meta property="og:title" content="myDownloader" />
     <meta property="og:description" content="Download videos from X and TikTok — fast, free, watermark-free." />
@@ -31,7 +47,15 @@
     <script defer src="https://hi.gachichio.org/t.js"></script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Real text for crawlers and slow connections. React replaces this as soon as the app loads. -->
+      <main style="font-family:system-ui,sans-serif;max-width:32rem;margin:0 auto;padding:2rem 1.25rem;line-height:1.6">
+        <h1>myDownloader saves videos from X and TikTok to your phone or laptop</h1>
+        <p>Paste a link, pick your quality, and the file goes straight to your device with the sound already in it. TikTok comes without the watermark. There is no sign-in and no ads.</p>
+        <p>Only public posts can be downloaded. Nothing you download is stored on a server.</p>
+        <noscript><p>myDownloader needs JavaScript to run.</p></noscript>
+      </main>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -12,17 +12,12 @@
 // bundle line-for-line; not something that showed up in the app's own error
 // handling, because the app never got a response shaped enough to explain.
 
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': '*',
-  'Access-Control-Expose-Headers': '*',
-};
+// CORS is added once, in lib/cors.js, around every response.
 
 function jsonErr(msg, status = 400) {
   return new Response(JSON.stringify({ error: msg }), {
     status,
-    headers: { 'Content-Type': 'application/json', ...CORS },
+    headers: { 'Content-Type': 'application/json' },
   });
 }
 
@@ -46,13 +41,14 @@ async function handleTweetLookup(tweetId) {
       },
     });
   } catch (e) {
-    return jsonErr(`Network error reaching X: ${e.message}`, 502);
+    console.error('[x] lookup failed', e?.message);
+    return jsonErr('Could not reach X. Try again.', 502);
   }
-  if (!res.ok) return jsonErr(`X API error: ${res.status}`, res.status);
+  if (!res.ok) return jsonErr('X could not find that post.', res.status === 404 ? 404 : 502);
 
   const data = await res.json();
   return new Response(JSON.stringify(data), {
-    headers: { 'Content-Type': 'application/json', ...CORS },
+    headers: { 'Content-Type': 'application/json' },
   });
 }
 
@@ -86,13 +82,14 @@ async function handleVideoDownload(request, rawUrl) {
   try {
     upstream = await fetch(cleanUrl, { headers: upstreamHeaders });
   } catch (e) {
-    return jsonErr(`Failed to fetch video: ${e.message}`, 502);
+    console.error('[x] download failed', e?.message);
+    return jsonErr('Could not fetch that video. Try again.', 502);
   }
   if (!upstream.ok && upstream.status !== 206) {
-    return jsonErr(`video.twimg.com returned ${upstream.status}`, upstream.status);
+    return jsonErr('X refused the download. Try again.', 502);
   }
 
-  const responseHeaders = { ...CORS };
+  const responseHeaders = {};
   responseHeaders['Content-Type'] = upstream.headers.get('Content-Type') || 'video/mp4';
   responseHeaders['Accept-Ranges'] = 'bytes';
   const contentLength = upstream.headers.get('Content-Length');

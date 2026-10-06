@@ -25,3 +25,8 @@ dist-ssr
 
 .firebase/
 .wrangler/
+
+# Playwright
+test-results
+playwright-report
+.wrangler

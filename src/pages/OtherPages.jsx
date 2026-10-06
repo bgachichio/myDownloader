@@ -1,4 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
+import { useApp, THEMES, SCALES } from '../hooks/app-context.js';
+import { SUPPORT } from '../config/support';
+import pkg from '../../package.json';
 import {
   Download, Link2, Loader2, AlertCircle, CheckCircle2,
   X, Trash2, ExternalLink, Clock, Settings2, ChevronDown, Share2
@@ -9,10 +12,10 @@ import { fetchMedia, downloadFile, isSupportedUrl, extractTweetId } from '../lib
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function Banner({ type, message, onClose }) {
   const cfg = {
-    error:   { bg: '#fef2f2', border: '#fecaca', color: '#dc2626', icon: AlertCircle },
-    success: { bg: '#f0fdf4', border: '#bbf7d0', color: '#16a34a', icon: CheckCircle2 },
-    info:    { bg: '#eff6ff', border: '#bfdbfe', color: '#2563eb', icon: AlertCircle },
-  }[type] || { bg: '#eff6ff', border: '#bfdbfe', color: '#2563eb', icon: AlertCircle };
+    error:   { bg: 'var(--c-danger-bg)', border: 'var(--c-danger-line)', color: 'var(--c-danger)', icon: AlertCircle },
+    success: { bg: 'var(--c-ok-bg)', border: 'var(--c-ok-line)', color: 'var(--c-ok)', icon: CheckCircle2 },
+    info:    { bg: 'var(--c-info-bg)', border: 'var(--c-info-line)', color: 'var(--c-info)', icon: AlertCircle },
+  }[type] || { bg: 'var(--c-info-bg)', border: 'var(--c-info-line)', color: 'var(--c-info)', icon: AlertCircle };
   const Icon = cfg.icon;
   return (
     <div className="flex items-start gap-3 p-3.5 rounded-xl mb-3"
@@ -26,9 +29,9 @@ function Banner({ type, message, onClose }) {
 
 function ProgressBar({ pct }) {
   return (
-    <div className="w-full rounded-full overflow-hidden mb-2" style={{ height: 6, background: '#e8f0eb' }}>
+    <div className="w-full rounded-full overflow-hidden mb-2" style={{ height: 6, background: 'var(--c-line)' }}>
       <div className="h-full rounded-full transition-all duration-300"
-        style={{ width: `${pct}%`, background: 'linear-gradient(90deg,#237352,#2d9164)' }} />
+        style={{ width: `${pct}%`, background: 'linear-gradient(90deg,var(--c-brand),var(--c-brand-2))' }} />
     </div>
   );
 }
@@ -39,9 +42,9 @@ function QualityBadge({ quality, selected, onClick }) {
     <button onClick={onClick}
       className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all"
       style={{
-        background: selected ? '#237352' : '#f8fafb',
-        color:      selected ? 'white'   : '#4a5568',
-        border:     `2px solid ${selected ? '#237352' : '#e2e8f0'}`,
+        background: selected ? 'var(--c-brand)' : 'var(--c-bg)',
+        color:      selected ? 'white'   : 'var(--c-text2)',
+        border:     `2px solid ${selected ? 'var(--c-brand)' : 'var(--c-line)'}`,
       }}>
       {quality}
     </button>
@@ -59,11 +62,6 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
   const [progress,   setProgress]   = useState(0);
   const [banner,     setBanner]     = useState(null);
   const inputRef = useRef(null);
-
-  // Handle incoming shared URL from Android share sheet
-  useEffect(() => {
-    if (sharedUrl) { setUrl(sharedUrl); setVideoInfo(null); }
-  }, [sharedUrl]);
 
   const reset = () => {
     setUrl(''); setPhase('idle'); setVideoInfo(null);
@@ -143,16 +141,16 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
       <div className="flex flex-col min-h-full">
         <div className="flex-1 flex flex-col items-center justify-center px-5 py-12 text-center">
           <div className="w-20 h-20 rounded-full flex items-center justify-center mb-5"
-            style={{ background: 'linear-gradient(135deg,#237352,#2d9164)', boxShadow: '0 12px 32px rgba(35,115,82,0.35)' }}>
+            style={{ background: 'linear-gradient(135deg,var(--c-brand),var(--c-brand-2))', boxShadow: '0 12px 32px rgba(35,115,82,0.35)' }}>
             <CheckCircle2 size={38} color="white" />
           </div>
-          <h2 className="text-2xl font-black mb-2" style={{ color: '#0f1923', letterSpacing: '-0.02em' }}>
+          <h2 className="text-2xl font-black mb-2" style={{ color: 'var(--c-ink)', letterSpacing: '-0.02em' }}>
             Saved!
           </h2>
-          <p className="text-sm mb-1" style={{ color: '#64748b' }}>
+          <p className="text-sm mb-1" style={{ color: 'var(--c-text2)' }}>
             🎬 {variant?.quality} · @{videoInfo?.authorHandle}
           </p>
-          <p className="text-xs mb-8" style={{ color: '#94a3b8' }}>Check your Downloads folder</p>
+          <p className="text-xs mb-8" style={{ color: 'var(--c-text3)' }}>Check your Downloads folder</p>
           <button onClick={reset} className="btn-primary w-full max-w-xs">
             <Download size={16} /> Download another
           </button>
@@ -165,10 +163,10 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
   return (
     <div className="flex flex-col">
       <div className="px-5 pt-5 pb-2">
-        <h1 className="text-xl font-black mb-0.5" style={{ color: '#0f1923', letterSpacing: '-0.02em' }}>
+        <h1 className="text-xl font-black mb-0.5" style={{ color: 'var(--c-ink)', letterSpacing: '-0.02em' }}>
           Video Downloader
         </h1>
-        <p className="text-xs" style={{ color: '#94a3b8' }}>Paste an X or TikTok link · pick quality · download</p>
+        <p className="text-xs" style={{ color: 'var(--c-text3)' }}>Paste an X or TikTok link · pick quality · download</p>
       </div>
 
       <div className="px-4 py-3 flex flex-col gap-3">
@@ -176,11 +174,11 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
 
         <div className="card p-4">
           {/* URL input */}
-          <label className="block text-xs font-black uppercase tracking-wider mb-2" style={{ color: '#237352' }}>
+          <label className="block text-xs font-black uppercase tracking-wider mb-2" style={{ color: 'var(--c-brand-text)' }}>
             X Post URL
           </label>
           <div className="relative mb-4">
-            <Link2 size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: '#b0bec5' }} />
+            <Link2 size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--c-faint)' }} />
             <input
               ref={inputRef}
               type="url"
@@ -189,16 +187,16 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
               onKeyDown={e => e.key === 'Enter' && phase === 'idle' && handleFetch()}
               placeholder="x.com · tiktok.com"
               className="url-input"
-              style={{ paddingLeft: '38px', fontSize: 14 }}
+              style={{ paddingLeft: '38px', fontSize: '0.875rem' }}
             />
           </div>
 
           {/* ── Video info card (shown after fetch) ── */}
           {videoInfo && phase !== 'fetching' && (
-            <div className="mb-4 rounded-xl overflow-hidden" style={{ border: '1.5px solid #e2e8f0' }}>
+            <div className="mb-4 rounded-xl overflow-hidden" style={{ border: '1.5px solid var(--c-line)' }}>
               {/* Thumbnail */}
               {videoInfo.thumbnailUrl && (
-                <div className="relative w-full" style={{ paddingBottom: '56.25%', background: '#0f1923' }}>
+                <div className="relative w-full" style={{ paddingBottom: '56.25%', background: 'var(--c-ink-bg)' }}>
                   <img src={videoInfo.thumbnailUrl} alt=""
                     className="absolute inset-0 w-full h-full object-cover opacity-80" />
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -212,13 +210,13 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
               {/* Tweet meta */}
               <div className="p-3">
                 {videoInfo.authorName && (
-                  <p className="text-xs font-bold mb-1" style={{ color: '#0f1923' }}>
+                  <p className="text-xs font-bold mb-1" style={{ color: 'var(--c-ink)' }}>
                     {videoInfo.authorName}
-                    {videoInfo.authorHandle && <span style={{ color: '#94a3b8', fontWeight: 400 }}> @{videoInfo.authorHandle}</span>}
+                    {videoInfo.authorHandle && <span style={{ color: 'var(--c-text3)', fontWeight: 400 }}> @{videoInfo.authorHandle}</span>}
                   </p>
                 )}
                 {videoInfo.tweetText && (
-                  <p className="text-xs leading-relaxed line-clamp-2" style={{ color: '#64748b' }}>
+                  <p className="text-xs leading-relaxed line-clamp-2" style={{ color: 'var(--c-text2)' }}>
                     {videoInfo.tweetText.slice(0, 280)}
                   </p>
                 )}
@@ -229,7 +227,7 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
           {/* ── Quality selector (shown after fetch) ── */}
           {videoInfo && (
             <>
-              <label className="block text-xs font-black uppercase tracking-wider mb-2" style={{ color: '#237352' }}>
+              <label className="block text-xs font-black uppercase tracking-wider mb-2" style={{ color: 'var(--c-brand-text)' }}>
                 Quality — {videoInfo.variants.length} option{videoInfo.variants.length !== 1 ? 's' : ''} available
               </label>
               <div className="flex gap-2 mb-4">
@@ -249,7 +247,7 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
           {phase === 'downloading' && (
             <div className="mb-4">
               <ProgressBar pct={progress} />
-              <p className="text-xs text-center" style={{ color: '#237352' }}>
+              <p className="text-xs text-center" style={{ color: 'var(--c-brand-text)' }}>
                 {progress < 5 ? 'Starting…' : progress < 95 ? `Downloading… ${progress}%` : 'Saving…'}
               </p>
             </div>
@@ -263,7 +261,7 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
               disabled={!url.trim() || phase === 'fetching'}
               className="btn-primary w-full"
               style={{
-                fontSize: 16, padding: '15px', borderRadius: 14,
+                fontSize: '1.0rem', padding: '15px', borderRadius: 14,
                 boxShadow: url.trim() && phase === 'idle' ? '0 8px 28px rgba(35,115,82,0.35)' : 'none',
                 opacity: (!url.trim() || phase === 'fetching') ? 0.5 : 1,
               }}>
@@ -280,7 +278,7 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
                 disabled={phase === 'downloading'}
                 className="btn-primary flex-1"
                 style={{
-                  fontSize: 15, padding: '14px', borderRadius: 14,
+                  fontSize: '0.9375rem', padding: '14px', borderRadius: 14,
                   opacity: phase === 'downloading' ? 0.5 : 1,
                   boxShadow: phase !== 'downloading' ? '0 8px 28px rgba(35,115,82,0.35)' : 'none',
                 }}>
@@ -300,7 +298,7 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
           )}
 
           {/* Status line */}
-          <p className="text-xs text-center mt-2" style={{ color: '#94a3b8' }}>
+          <p className="text-xs text-center mt-2" style={{ color: 'var(--c-text3)' }}>
             {videoInfo
               ? `${videoInfo.provider === 'tiktok' ? '♪' : '𝕏'} · ${videoInfo.variants[selectedQ]?.quality}${videoInfo.variants[selectedQ]?.bitrate ? ` · ${(videoInfo.variants[selectedQ].bitrate / 1000000).toFixed(1)} Mbps` : ''}`
               : 'X · TikTok'}
@@ -310,15 +308,15 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
         {/* Share tip card */}
         {!url && (
           <div className="card p-5 text-center">
-            <Share2 size={22} className="mx-auto mb-2" style={{ color: '#c8d8ce' }} />
-            <p className="font-semibold text-sm mb-1" style={{ color: '#9ca3af' }}>Share directly from the app</p>
-            <p className="text-xs leading-relaxed" style={{ color: '#d1d5db' }}>
+            <Share2 size={22} className="mx-auto mb-2" style={{ color: 'var(--c-line)' }} />
+            <p className="font-semibold text-sm mb-1" style={{ color: 'var(--c-text3)' }}>Share directly from the app</p>
+            <p className="text-xs leading-relaxed" style={{ color: 'var(--c-line)' }}>
               On Android: tap Share on any X or TikTok post → choose myDownloader from the share sheet
             </p>
           </div>
         )}
 
-        <p className="text-xs text-center pb-2" style={{ color: '#b0bec5' }}>
+        <p className="text-xs text-center pb-2" style={{ color: 'var(--c-faint)' }}>
           ⚡ Nothing stored · no sign-in · no cost · no ads
         </p>
       </div>
@@ -332,11 +330,9 @@ export function DownloaderPage({ sharedUrl, setSharedUrl }) {
 // HISTORY PAGE
 // ─────────────────────────────────────────────────────────────────────────────
 export function HistoryPage({ onNavigate, setSharedUrl }) {
-  const [history, setHistory] = useState([]);
-
-  useEffect(() => {
-    try { setHistory(JSON.parse(localStorage.getItem('myd_history') || '[]')); } catch { setHistory([]); }
-  }, []);
+  const [history, setHistory] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('myd_history') || '[]'); } catch { return []; }
+  });
 
   const clearAll   = () => { localStorage.removeItem('myd_history'); setHistory([]); };
   const reDownload = item => { setSharedUrl?.(item.url); onNavigate('downloader', item.url); };
@@ -345,12 +341,12 @@ export function HistoryPage({ onNavigate, setSharedUrl }) {
     <div className="flex flex-col">
       <div className="px-5 pt-5 pb-3 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-black" style={{ color: '#0f1923', letterSpacing: '-0.02em' }}>History</h1>
-          <p className="text-xs" style={{ color: '#94a3b8' }}>{history.length} download{history.length !== 1 ? 's' : ''}</p>
+          <h1 className="text-xl font-black" style={{ color: 'var(--c-ink)', letterSpacing: '-0.02em' }}>History</h1>
+          <p className="text-xs" style={{ color: 'var(--c-text3)' }}>{history.length} download{history.length !== 1 ? 's' : ''}</p>
         </div>
         {history.length > 0 && (
           <button onClick={clearAll} className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold"
-            style={{ color: '#dc2626', background: '#fef2f2' }}>
+            style={{ color: 'var(--c-danger)', background: 'var(--c-danger-bg)' }}>
             <Trash2 size={12} /> Clear all
           </button>
         )}
@@ -359,11 +355,11 @@ export function HistoryPage({ onNavigate, setSharedUrl }) {
       <div className="px-4 pb-4">
         {history.length === 0 ? (
           <div className="card p-10 text-center">
-            <Clock size={32} className="mx-auto mb-3" style={{ color: '#e2e8f0' }} />
-            <p className="font-semibold text-sm mb-1" style={{ color: '#9ca3af' }}>No downloads yet</p>
-            <p className="text-xs mb-4" style={{ color: '#d1d5db' }}>Downloads you make will appear here</p>
+            <Clock size={32} className="mx-auto mb-3" style={{ color: 'var(--c-line)' }} />
+            <p className="font-semibold text-sm mb-1" style={{ color: 'var(--c-text3)' }}>No downloads yet</p>
+            <p className="text-xs mb-4" style={{ color: 'var(--c-line)' }}>Downloads you make will appear here</p>
             <button onClick={() => onNavigate('downloader')} className="btn-primary"
-              style={{ fontSize: 13, padding: '10px 20px' }}>
+              style={{ fontSize: '0.8125rem', padding: '10px 20px' }}>
               <Download size={14} /> Start downloading
             </button>
           </div>
@@ -373,26 +369,26 @@ export function HistoryPage({ onNavigate, setSharedUrl }) {
               <div key={i} className="card p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-sm truncate mb-1" style={{ color: '#0f1923' }}>
+                    <p className="font-semibold text-sm truncate mb-1" style={{ color: 'var(--c-ink)' }}>
                       {item.title || item.url}
                     </p>
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                        style={{ background: '#e8f5ee', color: '#237352' }}>
+                        style={{ background: 'var(--c-tint)', color: 'var(--c-brand-text)' }}>
                         🎬 {item.quality}
                       </span>
-                      <span className="text-xs" style={{ color: '#94a3b8' }}>
+                      <span className="text-xs" style={{ color: 'var(--c-text3)' }}>
                         {new Date(item.date).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
                     <button onClick={() => reDownload(item)} className="p-2 rounded-lg"
-                      style={{ background: '#e8f5ee', color: '#237352' }}>
+                      style={{ background: 'var(--c-tint)', color: 'var(--c-brand-text)' }}>
                       <Download size={14} />
                     </button>
                     <a href={item.url} target="_blank" rel="noopener noreferrer"
-                      className="p-2 rounded-lg" style={{ background: '#f8fafb', color: '#64748b' }}>
+                      className="p-2 rounded-lg" style={{ background: 'var(--c-bg)', color: 'var(--c-text2)' }}>
                       <ExternalLink size={14} />
                     </a>
                   </div>
@@ -407,10 +403,33 @@ export function HistoryPage({ onNavigate, setSharedUrl }) {
   );
 }
 
+function Section({ title, children }) {
+  return (
+    <div className="mb-5">
+      <p className="text-xs font-black uppercase tracking-widest mb-2 px-1" style={{ color: 'var(--c-brand-text)' }}>{title}</p>
+      <div className="card overflow-hidden">{children}</div>
+    </div>
+  );
+}
+
+function Row({ label, desc, last, children }) {
+  return (
+    <div className="flex items-center justify-between gap-4 px-4 py-3.5"
+      style={{ borderBottom: last ? 'none' : '1px solid var(--c-surface-2)' }}>
+      <div className="min-w-0">
+        <p className="text-sm font-semibold" style={{ color: 'var(--c-ink)' }}>{label}</p>
+        {desc && <p className="text-xs mt-0.5" style={{ color: 'var(--c-text3)' }}>{desc}</p>}
+      </div>
+      <div className="flex-shrink-0">{children}</div>
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // SETTINGS PAGE
 // ─────────────────────────────────────────────────────────────────────────────
 export function SettingsPage() {
+  const { theme, setTheme, fontScale, setFontScale } = useApp();
   const [saved, setSaved] = useState(false);
   const [histCount, setHistCount] = useState(() => {
     try { return JSON.parse(localStorage.getItem('myd_history') || '[]').length; } catch { return 0; }
@@ -423,37 +442,31 @@ export function SettingsPage() {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const Section = ({ title, children }) => (
-    <div className="mb-5">
-      <p className="text-xs font-black uppercase tracking-widest mb-2 px-1" style={{ color: '#237352' }}>{title}</p>
-      <div className="card overflow-hidden">{children}</div>
-    </div>
-  );
-  const Row = ({ label, desc, last, children }) => (
-    <div className="flex items-center justify-between gap-4 px-4 py-3.5"
-      style={{ borderBottom: last ? 'none' : '1px solid #f1f5f9' }}>
-      <div className="min-w-0">
-        <p className="text-sm font-semibold" style={{ color: '#0f1923' }}>{label}</p>
-        {desc && <p className="text-xs mt-0.5" style={{ color: '#94a3b8' }}>{desc}</p>}
-      </div>
-      <div className="flex-shrink-0">{children}</div>
-    </div>
-  );
-
   return (
     <div className="flex flex-col">
       <div className="px-5 pt-5 pb-4">
-        <h1 className="text-xl font-black mb-0.5" style={{ color: '#0f1923', letterSpacing: '-0.02em' }}>Settings</h1>
-        <p className="text-xs" style={{ color: '#94a3b8' }}>App info and preferences</p>
+        <h1 className="text-xl font-black mb-0.5" style={{ color: 'var(--c-ink)', letterSpacing: '-0.02em' }}>Settings</h1>
+        <p className="text-xs" style={{ color: 'var(--c-text3)' }}>App info and preferences</p>
       </div>
       <div className="px-4 pb-4">
         <Section title="How it works">
-          <Row label="No backend" desc="Videos are fetched directly from X's own CDN. No server, no cost, no ad trackers.">
-            <span className="text-xs font-bold px-2 py-1 rounded-lg" style={{ background: '#e8f5ee', color: '#237352' }}>✓</span>
+          <Row label="Nothing stored" desc="Videos stream through a small proxy that keeps nothing, straight to your device. No ads, no ad trackers.">
+            <span className="text-xs font-bold px-2 py-1 rounded-lg" style={{ background: 'var(--c-tint)', color: 'var(--c-brand-text)' }}>✓</span>
           </Row>
-          <Row label="No sign-in" desc="No account, no API key, no rate limit for personal use." last>
-            <span className="text-xs font-bold px-2 py-1 rounded-lg" style={{ background: '#e8f5ee', color: '#237352' }}>✓</span>
+          <Row label="No sign-in" desc="No account and no API key. Visits are counted anonymously." last>
+            <span className="text-xs font-bold px-2 py-1 rounded-lg" style={{ background: 'var(--c-tint)', color: 'var(--c-brand-text)' }}>✓</span>
           </Row>
+        </Section>
+
+        <Section title="Appearance">
+          <div className="px-4 py-3.5" style={{ borderBottom: '1px solid var(--c-surface-2)' }}>
+            <p className="text-sm font-semibold mb-2" style={{ color: 'var(--c-ink)' }}>Lighting</p>
+            <Segmented label="Lighting" value={theme} options={THEMES} onChange={setTheme} />
+          </div>
+          <div className="px-4 py-3.5">
+            <p className="text-sm font-semibold mb-2" style={{ color: 'var(--c-ink)' }}>Text size</p>
+            <Segmented label="Text size" value={fontScale} options={SCALES} onChange={setFontScale} />
+          </div>
         </Section>
 
         <Section title="Privacy">
@@ -462,7 +475,7 @@ export function SettingsPage() {
             last>
             <button onClick={clearHistory}
               className="text-xs px-3 py-1.5 rounded-lg font-bold"
-              style={{ background: saved ? '#e8f5ee' : '#fef2f2', color: saved ? '#237352' : '#dc2626' }}>
+              style={{ background: saved ? 'var(--c-tint)' : 'var(--c-danger-bg)', color: saved ? 'var(--c-brand-text)' : 'var(--c-danger)' }}>
               {saved ? 'Cleared ✓' : 'Clear'}
             </button>
           </Row>
@@ -470,14 +483,44 @@ export function SettingsPage() {
 
         <Section title="About">
           <Row label="Platform support" desc="X · TikTok">
-            <span className="text-xs font-bold px-2 py-1 rounded-lg" style={{ background: '#e8f5ee', color: '#237352' }}>𝕏</span>
+            <span className="text-xs font-bold px-2 py-1 rounded-lg" style={{ background: 'var(--c-tint)', color: 'var(--c-brand-text)' }}>𝕏</span>
           </Row>
-          <Row label="Version" last>
-            <span className="text-xs font-bold px-2 py-1 rounded-lg" style={{ background: '#e8f5ee', color: '#237352' }}>v6.3</span>
+          <Row label="Version">
+            <span className="text-xs font-bold px-2 py-1 rounded-lg" style={{ background: 'var(--c-tint)', color: 'var(--c-brand-text)' }}>v{pkg.version}</span>
+          </Row>
+          <Row label="Made by" last>
+            <a href={SUPPORT.authorUrl} target="_blank" rel="noopener noreferrer"
+              className="text-sm font-semibold" style={{ color: 'var(--c-brand-text)' }}>
+              Made with ❤️ by {SUPPORT.authorName}
+            </a>
           </Row>
         </Section>
       </div>
       <Footer />
+    </div>
+  );
+}
+
+
+// A row of mutually exclusive choices. 44px targets, never colour alone (the chosen one is also bold and ticked).
+function Segmented({ label, value, options, onChange }) {
+  return (
+    <div role="group" aria-label={label} className="flex flex-wrap gap-2">
+      {options.map((o) => {
+        const on = o.id === value;
+        return (
+          <button key={o.id} type="button" aria-pressed={on} onClick={() => onChange(o.id)}
+            style={{
+              minHeight: 44, padding: '0 16px', borderRadius: 9999, fontSize: '0.875rem',
+              fontWeight: on ? 700 : 500, cursor: 'pointer',
+              border: `1.5px solid ${on ? 'var(--c-brand-text)' : 'var(--c-line)'}`,
+              background: on ? 'var(--c-tint)' : 'transparent',
+              color: on ? 'var(--c-brand-text)' : 'var(--c-text2)',
+            }}>
+            {on ? '✓ ' : ''}{o.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
