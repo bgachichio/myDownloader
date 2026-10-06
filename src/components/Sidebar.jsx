@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Download, Home, Settings, History, Coffee, Menu, X, Zap } from 'lucide-react';
+import { Download, Home, Settings, History, Coffee, Menu, X } from 'lucide-react';
+import Mark from './Mark';
 
 const navItems = [
   { icon: Home,     label: 'Home',       id: 'home' },
@@ -38,7 +39,7 @@ export default function Sidebar({ activePage, onNavigate, open, onClose }) {
         <div className="flex items-center justify-between p-5 pb-4" style={{ borderBottom: '1px solid #e8f0eb' }}>
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center pulse-glow-anim" style={{ background: '#237352' }}>
-              <Zap size={17} color="white" fill="white" />
+              <Mark size={16} />
             </div>
             <div>
               <div className="text-base leading-tight" style={{ fontWeight: 800, color: '#0f1923' }}>

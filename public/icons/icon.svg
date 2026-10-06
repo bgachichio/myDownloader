@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="myDownloader">
+  <title>myDownloader</title>
+  <rect width="512" height="512" rx="112" fill="#237352"/>
+  <path d="M256 124v170" fill="none" stroke="#FFFFFF" stroke-width="42" stroke-linecap="round"/>
+  <path d="M184 226l72 72 72-72" fill="none" stroke="#FFFFFF" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M148 346v24a22 22 0 0 0 22 22h172a22 22 0 0 0 22-22v-24" fill="none" stroke="#C4EEDC" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

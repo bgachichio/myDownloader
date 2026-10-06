@@ -10,7 +10,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'icons/*.png'],
+      includeAssets: ['favicon.ico', 'icons/*.png', 'icons/*.svg', 'og-image.png'],
       manifest: {
         name: 'myDownloader',
         short_name: 'myDownloader',
@@ -21,6 +21,11 @@ export default defineConfig({
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
+        screenshots: [
+          { src: '/screenshots/narrow-1-home.png',     sizes: '780x1688',  type: 'image/png', form_factor: 'narrow', label: 'Paste a link from X or TikTok' },
+          { src: '/screenshots/narrow-2-download.png', sizes: '780x1688',  type: 'image/png', form_factor: 'narrow', label: 'Pick a quality and download' },
+          { src: '/screenshots/wide-1-home.png',       sizes: '2560x1600', type: 'image/png', form_factor: 'wide',   label: 'myDownloader on a laptop' },
+        ],
         share_target: {
           action: '/share-target',
           method: 'GET',
@@ -37,14 +42,15 @@ export default defineConfig({
           { src: '/icons/icon-144x144.png', sizes: '144x144', type: 'image/png' },
           { src: '/icons/icon-152x152.png', sizes: '152x152', type: 'image/png' },
           { src: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+          { src: '/icons/icon-maskable-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
           { src: '/icons/icon-384x384.png', sizes: '384x384', type: 'image/png' },
           { src: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: '/icons/icon-maskable-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: '/icons/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,svg,woff2}', 'icons/*.png'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

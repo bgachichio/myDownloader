@@ -1,4 +1,5 @@
-import { Menu, Zap } from 'lucide-react';
+import { Menu } from 'lucide-react';
+import Mark from './Mark';
 
 export default function Topbar({ title, onMenuOpen }) {
   return (
@@ -15,7 +16,7 @@ export default function Topbar({ title, onMenuOpen }) {
       <div className="flex items-center gap-2 flex-1">
         <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
           style={{ background: '#237352' }}>
-          <Zap size={14} color="white" fill="white" />
+          <Mark size={13} />
         </div>
         <span className="font-extrabold text-base" style={{ color: '#0f1923', letterSpacing: '-0.02em' }}>
           <span style={{ color: '#0f1923' }}>my</span><span style={{ color: '#237352' }}>Downloader</span>
