@@ -9,3 +9,8 @@ Load order in Claude Chat: `meta-skills`, `brian`, `builder`, `designer`, `devel
 - **Hand back to chat, do not decide:** a new dependency, any change to the Worker's allowlist or origin list, a new port or hosting target, a change to what is counted or promised about privacy, any deviation from the colour roles.
 - **Gate:** `pre-commit run --all-files`, `npm audit`, `npm run lint`, `npm test`, `npx playwright test` all clean before a push. Never `--no-verify`.
 - **Privacy claim to keep true:** the Worker keeps no logs (`[observability] enabled = false`), the pasted link never reaches Tally, history stays in the browser. If the copy changes, the code must match.
+
+## House lines
+
+Copy: Cut taglines, helper text and secondary labels that restate a visible label or a control's name. Keep labels, format hints, errors, units, status and honesty tags, and every accessible name. If a screen needs copy to make sense, fix the layout first.
+Decide: When UX, DX and AX pull apart, decide in this order: nothing existing breaks (build, tests, the WCAG floor, the §12 defaults), then the user, then the agent, then the developer. Say which one lost, and why.
